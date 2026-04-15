@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RetailOS — Backoffice Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sb:#0f172a;--sb-h:#1e293b;--sb-a:#1e3a5f;
+  --accent:#00b388;--accent-d:#009970;
+  --bg:#f1f5f9;--card:#fff;--border:#e2e8f0;
+  --text:#0f172a;--muted:#64748b;
+  --red:#dc2626;--amber:#d97706;--green:#16a34a;
+  --blue:#2563eb;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--sb);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.sb-logo-sq{width:30px;height:30px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-sq svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5}
+.sb-logo-txt{font-size:15px;font-weight:700;color:#fff}
+.sb-logo-sub{font-size:9px;color:rgba(255,255,255,.35);margin-top:1px}
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto}
+.sb-section{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1.2px;text-transform:uppercase;padding:12px 16px 4px;font-weight:600}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.5);transition:all .12s;border-radius:0;font-size:13px}
+.ni:hover{background:var(--sb-h);color:rgba(255,255,255,.85)}
+.ni.on{background:var(--sb-a);color:#fff;border-left:3px solid var(--accent)}
+.ni svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
+.ni .badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.sb-bot{border-top:1px solid rgba(255,255,255,.06);padding:12px 16px}
+.sb-user{display:flex;align-items:center;gap:9px}
+.sb-av{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-uname{font-size:12px;color:#fff;font-weight:500}
+.sb-urole{font-size:10px;color:rgba(255,255,255,.35)}
+.sb-logout{margin-left:auto;color:rgba(255,255,255,.3);cursor:pointer;font-size:12px}
+.sb-logout:hover{color:var(--red)}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:52px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.tb-breadcrumb{font-size:13px;color:var(--muted);flex:1}
+.tb-breadcrumb span{color:var(--text);font-weight:600}
+.tb-actions{display:flex;gap:8px;align-items:center}
+.tb-btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#f8fafc;color:var(--text)}
+.tb-btn:hover{background:#f1f5f9}
+.tb-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tb-btn.primary:hover{background:var(--accent-d)}
+.tb-date{font-size:12px;color:var(--muted);background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:7px 12px}
+
+.content{flex:1;overflow-y:auto;padding:20px}
+.page{display:none}.page.on{display:block}
+
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:flex-start;gap:12px}
+.kico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kico svg{width:18px;height:18px;stroke-width:2;fill:none}
+.klbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;font-weight:600}
+.kval{font-size:22px;font-weight:700;line-height:1}
+.ksub{font-size:11px;margin-top:4px}
+.up{color:var(--green)}.dn{color:var(--red)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+.crd{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+.crd-last{margin-bottom:0}
+.ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ctitle{font-size:13px;font-weight:600}
+.clink{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500}
+
+.bk{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700}
+.bkg{background:#dcfce7;color:#166534}.bkr{background:#fee2e2;color:#991b1b}.bka{background:#fef3c7;color:#92400e}.bkb{background:#dbeafe;color:#1e40af}.bkp{background:#f3e8ff;color:#7e22ce}
+
+.dt{width:100%;border-collapse:collapse}
+.dt th{background:#f8fafc;font-size:10px;color:var(--muted);text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.dt td{font-size:12px;padding:10px 12px;border-bottom:1px solid #f1f5f9;color:var(--text)}
+.dt tr:last-child td{border:none}
+.dt tbody tr:hover td{background:#f8fafc;cursor:pointer}
+
+.stb{display:inline-flex;align-items:center;gap:5px}
+.stt{width:60px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;display:inline-block}
+.stf{height:100%;border-radius:3px}
+
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+.prog-label{min-width:140px;color:var(--text)}
+.prog-track{flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:var(--accent)}
+.prog-val{min-width:70px;text-align:right;font-weight:600;font-size:12px}
+
+.bar-row{display:flex;align-items:flex-end;gap:6px;height:90px;margin-bottom:6px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar-el{width:100%;border-radius:3px 3px 0 0;background:#dbeafe;min-height:3px;transition:height .3s}
+.bar-el.hi{background:var(--accent)}
+.bar-lbl{font-size:9px;color:var(--muted)}
+
+.activity{display:flex;flex-direction:column;gap:0}
+.act-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.act-row:last-child{border:none}
+.act-ic{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.act-ic svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2}
+.act-txt{font-size:12px;line-height:1.4;color:var(--text)}
+.act-time{font-size:10px;color:var(--muted);margin-top:1px}
+
+.pnc{display:flex;align-items:center;gap:8px}
+.pth{width:28px;height:28px;border-radius:6px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.pnn{font-size:12px;font-weight:600}.psk{font-size:10px;color:var(--muted)}
+.edit-link{color:var(--accent);font-size:11px;cursor:pointer;font-weight:500}
+
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--text)}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,179,136,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-actions{display:flex;gap:8px;margin-top:18px}
+
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.ss-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.ss-icon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ss-title{font-size:13px;font-weight:600}
+.ss-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.ss-body{padding:14px 16px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.toggle-row:last-child{border:none;padding-bottom:0}
+.toggle-info .tl{font-weight:500}
+.toggle-info .ts{font-size:11px;color:var(--muted);margin-top:1px}
+.toggle{width:38px;height:22px;border-radius:11px;background:#e2e8f0;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left .2s}
+.toggle.on::after{left:19px}
+
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.staff-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;gap:10px;align-items:flex-start}
+.staff-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.staff-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.staff-role{font-size:11px;color:var(--muted)}
+.staff-status{margin-top:6px}
+
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(50px);background:var(--sb);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:500;transition:transform .22s;z-index:999;white-space:nowrap;pointer-events:none;border-left:3px solid var(--accent)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+.report-krow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.ib{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.ib input,.ib select{background:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;color:var(--text)}
+.ib input{flex:1}
+.ib .ab{padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-sq"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div><div class="sb-logo-txt">RetailOS</div><div class="sb-logo-sub">Backoffice Admin</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">General</div>
+    <div class="ni on" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</div>
+    <div class="ni" onclick="go('analytics',this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics</div>
+
+    <div class="sb-section">Operaciones</div>
+    <div class="ni" onclick="go('products',this)"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Productos</div>
+    <div class="ni" onclick="go('orders',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Órdenes <span class="badge">12</span></div>
+    <div class="ni" onclick="go('customers',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Clientes</div>
+
+    <div class="sb-section">Pagos</div>
+    <div class="ni" onclick="go('payments',this)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Transacciones</div>
+    <div class="ni" onclick="go('reports',this)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reportes</div>
+
+    <div class="sb-section">Config</div>
+    <div class="ni" onclick="go('staff',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Personal</div>
+    <div class="ni" onclick="go('settings',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>Configuración</div>
+  </div>
+  <div class="sb-bot">
+    <div class="sb-user">
+      <div class="sb-av">AD</div>
+      <div><div class="sb-uname">Admin</div><div class="sb-urole">Super admin</div></div>
+      <div class="sb-logout" onclick="toast('Sesión cerrada')">✕</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-breadcrumb">RetailOS Admin / <span id="tb-t">Dashboard</span></div>
+    <div class="tb-actions">
+      <div class="tb-date" id="tb-date"></div>
+      <a href="/pos" style="text-decoration:none"><button class="tb-btn">→ Ir al POS</button></a>
+      <button class="tb-btn primary" onclick="toast('Exportando datos...')">↓ Exportar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="pg-dashboard">
+      <div class="krow">
+        <div class="kc"><div class="kico" style="background:#e6faf5"><svg viewBox="0 0 24 24" stroke="#00b388"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="klbl">Revenue del mes</div><div class="kval">$48,320</div><div class="ksub up">↑ 18% vs mes anterior</div></div></div>
+        <div class="kc"><div class="kico" style="background:#eef4ff"><svg viewBox="0 0 24 24" stroke="#2563eb"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg></div><div><div class="klbl">Órdenes del mes</div><div class="kval">1,284</div><div class="ksub up">↑ 9.3%</div></div></div>
+        <div class="kc"><div class="kico" style="background:#fff8e6"><svg viewBox="0 0 24 24" stroke="#d97706"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="klbl">Clientes activos</div><div class="kval">1,842</div><div class="ksub up">↑ 214 nuevos</div></div></div>
+        <div class="kc"><div class="kico" style="background:#fee2e2"><svg viewBox="0 0 24 24" stroke="#dc2626"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="klbl">Tasa de devolución</div><div class="kval">4.2%</div><div class="ksub dn">↑ 0.8% este mes</div></div></div>
+      </div>
+      <div class="grid3">
+        <div class="crd">
+          <div class="ct"><span class="ctitle">Revenue mensual 2025</span><span class="clink">Exportar CSV</span></div>
+          <div class="bar-row" id="monthly-bars"></div>
+          <div style="display:flex;gap:6px" id="monthly-labels"></div>
+        </div>
+        <div class="crd">
+          <div class="ct"><span class="ctitle">Actividad en tiempo real</span></div>
+          <div class="activity" id="activity-list"></div>
+        </div>
+      </div>
+      <div class="crd crd-last">
+        <div class="ct"><span class="ctitle">Resumen de pagos del mes</span><span class="clink">Ver todas →</span></div>
+        <div id="pay-prog"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="pg-analytics">
+      <div class="report-krow">
+        <div class="kc"><div class="kico" style="background:#e6faf5"><svg viewBox="0 0 24 24" stroke="#00b388" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="klbl">Revenue YTD</div><div class="kval">$186,420</div><div class="ksub up">↑ 24% vs año anterior</div></div></div>
+        <div class="kc"><div class="kico" style="background:#eef4ff"><div style="font-size:18px;line-height:1">📊</div></div><div><div class="klbl">Ticket promedio</div><div class="kval">$38.50</div><div class="ksub up">↑ $4.20 vs Q1</div></div></div>
+        <div class="kc"><div class="kico" style="background:#fff8e6"><div style="font-size:18px;line-height:1">🔄</div></div><div><div class="klbl">Tasa de retención</div><div class="kval">72%</div><div class="ksub up">↑ 5% este trimestre</div></div></div>
+      </div>
+      <div class="grid2">
+        <div class="crd"><div class="ct"><span class="ctitle">Revenue por categoría</span></div><div id="cat-prog"></div></div>
+        <div class="crd"><div class="ct"><span class="ctitle">Top 5 productos</span></div>
+          <table class="dt"><thead><tr><th>Producto</th><th>Unidades</th><th>Revenue</th></tr></thead><tbody>
+            <tr><td><div class="pnc"><div class="pth">👟</div><div><div class="pnn">Nike Air Max</div><div class="psk">NK-AM-001</div></div></div></td><td>248</td><td>$29,760</td></tr>
+            <tr><td><div class="pnc"><div class="pth">🧥</div><div><div class="pnn">Campera Denim</div><div class="psk">DN-JK-007</div></div></div></td><td>182</td><td>$17,290</td></tr>
+            <tr><td><div class="pnc"><div class="pth">⌚</div><div><div class="pnn">Reloj Casio</div><div class="psk">CS-WCH-01</div></div></div></td><td>165</td><td>$13,200</td></tr>
+            <tr><td><div class="pnc"><div class="pth">🎒</div><div><div class="pnn">Mochila Urbana</div><div class="psk">UB-BAG-002</div></div></div></td><td>142</td><td>$8,520</td></tr>
+            <tr><td><div class="pnc"><div class="pth">🧴</div><div><div class="pnn">Kit Skincare</div><div class="psk">SK-KIT-005</div></div></div></td><td>128</td><td>$5,760</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="pg-products">
+      <div class="ib">
+        <input placeholder="Buscar producto o SKU..." oninput="fProds(this.value)" />
+        <select onchange="fProdCat(this.value)"><option value="">Todas las categorías</option><option>Calzado</option><option>Ropa</option><option>Accesorios</option><option>Bolsos</option><option>Belleza</option></select>
+        <button class="ab" onclick="showAddProd()">+ Nuevo producto</button>
+      </div>
+      <div class="crd crd-last" style="padding:0;overflow:hidden">
+        <table class="dt"><thead><tr><th>Producto</th><th>Categoría</th><th>Precio costo</th><th>Precio venta</th><th>Margen</th><th>Stock</th><th>Estado</th><th></th></tr></thead><tbody id="prod-body"></tbody></table>
+      </div>
+      <div id="add-prod-form" style="display:none" class="crd" style="margin-top:12px">
+        <div class="ct"><span class="ctitle">Nuevo producto</span><span class="clink" onclick="document.getElementById('add-prod-form').style.display='none'">Cancelar</span></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" placeholder="Ej: Nike Air Max 270" /></div>
+          <div class="form-group"><label class="form-label">SKU</label><input class="form-input" placeholder="Ej: NK-AM-270" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Precio costo (ARS)</label><input class="form-input" type="number" placeholder="0.00" /></div>
+          <div class="form-group"><label class="form-label">Precio venta (ARS)</label><input class="form-input" type="number" placeholder="0.00" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Categoría</label><select class="form-input"><option>Calzado</option><option>Ropa</option><option>Accesorios</option><option>Bolsos</option><option>Belleza</option></select></div>
+          <div class="form-group"><label class="form-label">Stock inicial</label><input class="form-input" type="number" placeholder="0" /></div>
+        </div>
+        <div class="form-actions">
+          <button class="tb-btn primary" onclick="toast('Producto guardado ✓');document.getElementById('add-prod-form').style.display='none'">Guardar producto</button>
+          <button class="tb-btn" onclick="document.getElementById('add-prod-form').style.display='none'">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="page" id="pg-orders">
+      <div class="ib">
+        <input placeholder="Buscar por # orden o cliente..." />
+        <select><option>Todos los estados</option><option>Completado</option><option>Pendiente</option><option>Devuelto</option></select>
+        <select><option>Todos los métodos</option><option>MODO QR</option><option>Mercado Pago</option><option>Google Pay</option><option>Tarjeta</option><option>Efectivo</option></select>
+      </div>
+      <div class="crd crd-last" style="padding:0;overflow:hidden">
+        <table class="dt"><thead><tr><th>#</th><th>Cliente</th><th>Productos</th><th>Método de pago</th><th>Cuotas</th><th>Total</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody id="orders-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="page" id="pg-customers">
+      <div class="ib"><input placeholder="Buscar clientes..." /><button class="ab" onclick="toast('Nuevo cliente')">+ Agregar</button></div>
+      <div class="crd crd-last" style="padding:0;overflow:hidden">
+        <table class="dt"><thead><tr><th>Cliente</th><th>Email</th><th>Tier</th><th>Órdenes</th><th>Total gastado</th><th>Última compra</th><th></th></tr></thead>
+        <tbody id="cust-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="page" id="pg-payments">
+      <div class="krow">
+        <div class="kc"><div class="kico" style="background:#e8f0fe"><div style="font-size:16px;font-weight:800;color:#003087;line-height:1">M</div></div><div><div class="klbl">MODO QR</div><div class="kval">$14,200</div><div class="ksub up">29.4%</div></div></div>
+        <div class="kc"><div class="kico" style="background:#e0f4fd"><div style="font-size:16px;line-height:1">🔵</div></div><div><div class="klbl">Mercado Pago</div><div class="kval">$9,800</div><div class="ksub up">20.3%</div></div></div>
+        <div class="kc"><div class="kico" style="background:#f8f9ff"><div style="font-size:13px;font-weight:800;font-style:italic;color:#4285f4;line-height:1">G</div></div><div><div class="klbl">Google Pay</div><div class="kval">$8,640</div><div class="ksub up">17.9%</div></div></div>
+        <div class="kc"><div class="kico" style="background:#eff6ff"><div style="font-size:16px;line-height:1">💳</div></div><div><div class="klbl">Tarjeta en cuotas</div><div class="kval">$7,200</div><div class="ksub up">14.9%</div></div></div>
+      </div>
+      <div class="crd crd-last" style="padding:0;overflow:hidden">
+        <table class="dt"><thead><tr><th>#</th><th>Cliente</th><th>Método</th><th>Cuotas</th><th>Bruto</th><th>Comisión</th><th>Neto</th><th>Estado</th><th>Fecha/Hora</th></tr></thead>
+        <tbody id="pay-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="pg-reports">
+      <div class="report-krow">
+        <div class="kc"><div class="kico" style="background:#e6faf5"><svg viewBox="0 0 24 24" stroke="#00b388" fill="none" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="klbl">Revenue neto</div><div class="kval">$42,800</div><div class="ksub">Después de comisiones</div></div></div>
+        <div class="kc"><div class="kico" style="background:#fef3c7"><div style="font-size:18px;line-height:1">📋</div></div><div><div class="klbl">Comisiones pagadas</div><div class="kval">$5,520</div><div class="ksub dn">11.4% del bruto</div></div></div>
+        <div class="kc"><div class="kico" style="background:#dcfce7"><div style="font-size:18px;line-height:1">💹</div></div><div><div class="klbl">Margen bruto</div><div class="kval">42%</div><div class="ksub up">↑ 3% vs mes anterior</div></div></div>
+      </div>
+      <div class="grid2">
+        <div class="crd">
+          <div class="ct"><span class="ctitle">Reporte de cierre de caja</span><span class="clink" onclick="toast('Descargando PDF...')">↓ PDF</span></div>
+          <table class="dt"><thead><tr><th>Método</th><th>Transacciones</th><th>Total</th></tr></thead><tbody>
+            <tr><td>MODO QR</td><td>87</td><td>$14,200</td></tr>
+            <tr><td>Mercado Pago</td><td>62</td><td>$9,800</td></tr>
+            <tr><td>Google Pay</td><td>54</td><td>$8,640</td></tr>
+            <tr><td>Tarjeta cuotas</td><td>41</td><td>$7,200</td></tr>
+            <tr><td>Otros</td><td>38</td><td>$8,480</td></tr>
+            <tr><td style="font-weight:700">TOTAL</td><td style="font-weight:700">282</td><td style="font-weight:700;color:var(--accent)">$48,320</td></tr>
+          </tbody></table>
+        </div>
+        <div class="crd">
+          <div class="ct"><span class="ctitle">Exportar reportes</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="tb-btn" style="text-align:left;justify-content:flex-start" onclick="toast('📊 Exportando ventas.xlsx...')">📊 Reporte de ventas — Excel</button>
+            <button class="tb-btn" style="text-align:left;justify-content:flex-start" onclick="toast('📄 Exportando pagos.pdf...')">📄 Reporte de pagos — PDF</button>
+            <button class="tb-btn" style="text-align:left;justify-content:flex-start" onclick="toast('📦 Exportando inventario.csv...')">📦 Stock actual — CSV</button>
+            <button class="tb-btn" style="text-align:left;justify-content:flex-start" onclick="toast('👥 Exportando clientes.csv...')">👥 Base de clientes — CSV</button>
+            <button class="tb-btn" style="text-align:left;justify-content:flex-start" onclick="toast('🧾 Generando libro IVA...')">🧾 Libro IVA — AFIP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="page" id="pg-staff">
+      <div class="ib"><input placeholder="Buscar empleados..." /><button class="ab" onclick="toast('Nuevo empleado')">+ Agregar empleado</button></div>
+      <div class="staff-grid" id="staff-grid"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="pg-settings">
+      <div class="settings-section">
+        <div class="ss-header"><div class="ss-icon" style="background:#e6faf5">🏪</div><div><div class="ss-title">Datos del comercio</div><div class="ss-sub">Información fiscal y de contacto</div></div></div>
+        <div class="ss-body">
+          <div class="form-row"><div class="form-group"><label class="form-label">Razón social</label><input class="form-input" value="RetailOS S.A." /></div><div class="form-group"><label class="form-label">CUIT</label><input class="form-input" value="30-12345678-9" /></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Dirección</label><input class="form-input" value="Av. Colón 1234, Córdoba" /></div><div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" value="+54 351 555-0000" /></div></div>
+          <button class="tb-btn primary" onclick="toast('Datos guardados ✓')">Guardar cambios</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="ss-header"><div class="ss-icon" style="background:#e8f0fe">🏦</div><div><div class="ss-title">Métodos de pago habilitados</div><div class="ss-sub">Activar o desactivar por método</div></div></div>
+        <div class="ss-body" id="pay-toggles"></div>
+      </div>
+      <div class="settings-section">
+        <div class="ss-header"><div class="ss-icon" style="background:#fff8e6">🔔</div><div><div class="ss-title">Notificaciones y alertas</div><div class="ss-sub">Configurar avisos automáticos</div></div></div>
+        <div class="ss-body" id="notif-toggles"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<div class="toast" id="toast-el"></div>
+<script>
+const PR=[{n:'Nike Air Max',e:'👟',c:'Calzado',cost:60,price:120,s:72},{n:"Levi's 501",e:'👖',c:'Ropa',cost:35,price:75,s:3},{n:'Mochila Urbana',e:'🎒',c:'Bolsos',cost:28,price:60,s:22},{n:'Reloj Casio',e:'⌚',c:'Accesorios',cost:40,price:80,s:44},{n:'Kit Skincare',e:'🧴',c:'Belleza',cost:22,price:45,s:30},{n:'Adidas Slides',e:'🩴',c:'Calzado',cost:16,price:35,s:58},{n:'Campera Denim',e:'🧥',c:'Ropa',cost:48,price:95,s:11},{n:'Lentes de Sol',e:'🕶️',c:'Accesorios',cost:20,price:55,s:0},{n:'Tote Bag',e:'👜',c:'Bolsos',cost:12,price:30,s:67},{n:'Set Labial',e:'💋',c:'Belleza',cost:7,price:18,s:90}];
+const CR=[{n:'Maria Garcia',e:'maria@email.com',o:24,s:1840,t:'Gold',last:'14/04/2026'},{n:'James Wilson',e:'james@email.com',o:12,s:920,t:'Silver',last:'13/04/2026'},{n:'Priya Patel',e:'priya@email.com',o:31,s:2610,t:'Platinum',last:'15/04/2026'},{n:'Tom Chen',e:'tom@email.com',o:8,s:540,t:'Bronze',last:'10/04/2026'},{n:'Sara Lee',e:'sara@email.com',o:17,s:1230,t:'Silver',last:'12/04/2026'},{n:'Carlos Díaz',e:'carlos@email.com',o:5,s:290,t:'Bronze',last:'08/04/2026'},{n:'Emma Brown',e:'emma@email.com',o:42,s:3580,t:'Platinum',last:'15/04/2026'},{n:'Liam Smith',e:'liam@email.com',o:9,s:670,t:'Bronze',last:'11/04/2026'}];
+const ORDERS=[{id:'#1048',client:'Maria G.',prod:'Nike Air Max ×1',method:'MODO QR',cuotas:'—',total:'$84.50',status:'Completado',date:'15/04 14:32'},{id:'#1047',client:'James W.',prod:'Campera Denim ×2',method:'Google Pay',cuotas:'—',total:'$210.00',status:'Completado',date:'15/04 14:18'},{id:'#1046',client:'Priya P.',prod:'Kit Skincare ×1',method:'Mercado Pago',cuotas:'3 s/int',total:'$65.00',status:'Completado',date:'15/04 13:45'},{id:'#1045',client:'Tom C.',prod:'Tote Bag ×1',method:'Transfer 3.0',cuotas:'—',total:'$38.00',status:'Completado',date:'15/04 13:20'},{id:'#1044',client:'Sara L.',prod:'Reloj Casio ×1, Lentes ×1',method:'Tarjeta',cuotas:'12 c/int',total:'$152.00',status:'Completado',date:'15/04 12:58'},{id:'#1043',client:'Carlos D.',prod:'Adidas Slides ×2',method:'Naranja X',cuotas:'6 s/int',total:'$92.00',status:'Pendiente',date:'15/04 12:30'},{id:'#1042',client:'Emma B.',prod:'Nike Air Max ×2, Calcetines',method:'Tarjeta',cuotas:'—',total:'$320.00',status:'Completado',date:'15/04 11:47'},{id:'#1041',client:'Liam S.',prod:'Polo Shirt ×1',method:'Efectivo',cuotas:'—',total:'$42.00',status:'Completado',date:'15/04 11:20'}];
+const STAFF=[{n:'John Doe',role:'Gerente de tienda',av:'JD',color:'#00b388',status:'En turno'},{n:'Ana Pérez',role:'Cajera Principal',av:'AP',color:'#2563eb',status:'En turno'},{n:'Luis García',role:'Cajero',av:'LG',color:'#7c3aed',status:'Descanso'},{n:'Marta López',role:'Depósito',av:'ML',color:'#d97706',status:'En turno'},{n:'Diego Ruiz',role:'Repositor',av:'DR',color:'#dc2626',status:'Fuera de turno'},{n:'Sofía Medina',role:'Cajera',av:'SM',color:'#059669',status:'En turno'}];
+
+function toast(m){const e=document.getElementById('toast-el');e.textContent=m;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2400)}
+function go(p,el){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById('pg-'+p).classList.add('on');const T={dashboard:'Dashboard',analytics:'Analytics',products:'Productos',orders:'Órdenes',customers:'Clientes',payments:'Transacciones',reports:'Reportes',staff:'Personal',settings:'Configuración'};document.getElementById('tb-t').textContent=T[p]||p;if(p==='products')rProds(PR);if(p==='orders')rOrders(ORDERS);if(p==='customers')rCusts(CR);if(p==='payments')rPays();if(p==='staff')rStaff();if(p==='settings')rSettings();if(p==='analytics')rAnalytics();}
+
+document.getElementById('tb-date').textContent=new Date().toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+(function(){
+  const v=[28,32,41,38,44,51,48,55,60,58,52,48],mx=Math.max(...v);
+  const lbls=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('monthly-bars').innerHTML=v.map((x,i)=>`<div class="bar-col"><div class="bar-el${i===3?' hi':''}" style="height:${Math.round(x/mx*86)}px"></div></div>`).join('');
+  document.getElementById('monthly-labels').innerHTML=lbls.map(l=>`<div style="flex:1;font-size:9px;color:var(--muted);text-align:center">${l}</div>`).join('');
+})();
+
+const acts=[{ic:'#00b388',txt:'Venta #1048 — $84.50 completada',time:'2 min atrás',svg:'<polyline points="20 6 9 17 4 12"/>'},{ic:'#4285f4',txt:'Google Pay aprobado — James W. $210',time:'15 min',svg:'<rect x="1" y="4" width="22" height="16" rx="2"/>'},{ic:'#009ee3',txt:'Mercado Pago QR — $65.00 — 3 cuotas',time:'34 min',svg:'<circle cx="12" cy="12" r="10"/>'},{ic:'#f59e0b',txt:'⚠ Stock bajo: Campera Denim (11 u.)',time:'1 hr',svg:'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>'}];
+document.getElementById('activity-list').innerHTML=acts.map(a=>`<div class="act-row"><div class="act-ic" style="background:${a.ic}"><svg viewBox="0 0 24 24" width="12" height="12" stroke="#fff" fill="none" stroke-width="2">${a.svg}</svg></div><div><div class="act-txt">${a.txt}</div><div class="act-time">${a.time}</div></div></div>`).join('');
+
+const pd=[{n:'MODO QR',v:14200,c:'#003087'},{n:'Mercado Pago',v:9800,c:'#009ee3'},{n:'Google Pay',v:8640,c:'#4285f4'},{n:'Tarjeta cuotas',v:7200,c:'#2563eb'},{n:'Ualá',v:4100,c:'#7b2d8b'},{n:'Transfer 3.0',v:2980,c:'#00a651'},{n:'Naranja X',v:1920,c:'#ff6900'},{n:'Efectivo',v:1480,c:'#16a34a'}];
+const ptot=pd.reduce((s,x)=>s+x.v,0);
+document.getElementById('pay-prog').innerHTML=pd.map(d=>`<div class="prog-row"><div class="prog-label">${d.n}</div><div class="prog-track"><div class="prog-fill" style="width:${Math.round(d.v/ptot*100)}%;background:${d.c}"></div></div><div class="prog-val" style="color:${d.c}">${Math.round(d.v/ptot*100)}% · $${d.v.toLocaleString()}</div></div>`).join('');
+
+function rProds(ps){document.getElementById('prod-body').innerHTML=ps.map(p=>{const margin=Math.round((p.price-p.cost)/p.price*100);const sc=p.s===0?'#dc2626':p.s<10?'#dc2626':p.s<25?'#d97706':'#16a34a';const cl=p.s===0?'bkr':p.s<10?'bkr':p.s<25?'bka':'bkg';const lb=p.s===0?'Sin stock':p.s<10?'Stock bajo':p.s<25?'Medio':'OK';return `<tr><td><div class="pnc"><div class="pth">${p.e}</div><div><div class="pnn">${p.n}</div><div class="psk">SKU generado</div></div></div></td><td><span class="bk bkb">${p.c}</span></td><td>$${p.cost}</td><td>$${p.price}</td><td><span class="bk ${margin>40?'bkg':'bka'}">${margin}%</span></td><td><div class="stb"><div class="stt"><div class="stf" style="width:${Math.min(100,p.s)}%;background:${sc}"></div></div>${p.s}</div></td><td><span class="bk ${cl}">${lb}</span></td><td><span class="edit-link" onclick="toast('Editar: ${p.n}')">Editar</span></td></tr>`;}).join('');}
+
+function showAddProd(){const f=document.getElementById('add-prod-form');f.style.display=f.style.display==='none'?'block':'none';}
+function fProds(q){rProds(PR.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())));}
+function fProdCat(c){rProds(c?PR.filter(p=>p.c===c):PR);}
+
+function rOrders(ords){const sc={Completado:'bkg',Pendiente:'bka',Devuelto:'bkr'};document.getElementById('orders-body').innerHTML=ords.map(o=>`<tr><td style="font-weight:600">${o.id}</td><td>${o.client}</td><td style="font-size:11px;color:var(--muted)">${o.prod}</td><td><span class="bk bkb" style="font-size:9px">${o.method}</span></td><td style="font-size:11px;color:var(--muted)">${o.cuotas}</td><td style="font-weight:600">${o.total}</td><td><span class="bk ${sc[o.status]||'bkb'}">${o.status}</span></td><td style="font-size:11px;color:var(--muted)">${o.date}</td><td><span class="edit-link" onclick="toast('Ver orden ${o.id}')">Ver</span></td></tr>`).join('');}
+
+function rCusts(cs){const tc={Bronze:'#cd7f32',Silver:'#94a3b8',Gold:'#f59e0b',Platinum:'#a855f7'};document.getElementById('cust-body').innerHTML=cs.map(c=>{const ini=c.n.split(' ').map(w=>w[0]).join('');return `<tr><td><div class="pnc"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#00b388,#0077cc);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div><div><div class="pnn">${c.n}</div></div></div></td><td style="font-size:11px;color:var(--muted)">${c.e}</td><td><span class="bk" style="background:${tc[c.t]}22;color:${tc[c.t]};font-size:9px;padding:2px 6px;border-radius:6px;font-weight:700">${c.t}</span></td><td>${c.o}</td><td style="font-weight:600">$${c.s.toLocaleString()}</td><td style="font-size:11px;color:var(--muted)">${c.last}</td><td><span class="edit-link" onclick="toast('Ver perfil: ${c.n}')">Ver</span></td></tr>`;}).join('');}
+
+function rPays(){document.getElementById('pay-body').innerHTML=ORDERS.map(o=>{const comm=Math.round(parseFloat(o.total.replace('$',''))*0.025*100)/100;const net=(parseFloat(o.total.replace('$',''))-comm).toFixed(2);return `<tr><td style="font-weight:600">${o.id}</td><td>${o.client}</td><td><span class="bk bkb" style="font-size:9px">${o.method}</span></td><td style="font-size:11px;color:var(--muted)">${o.cuotas}</td><td>${o.total}</td><td style="color:var(--red);font-size:11px">-$${comm}</td><td style="color:var(--green);font-weight:600">$${net}</td><td><span class="bk ${o.status==='Completado'?'bkg':'bka'}">${o.status}</span></td><td style="font-size:11px;color:var(--muted)">${o.date}</td></tr>`;}).join('');}
+
+function rStaff(){const sc={'En turno':'bkg','Descanso':'bka','Fuera de turno':'bkr'};document.getElementById('staff-grid').innerHTML=STAFF.map(s=>`<div class="staff-card"><div class="staff-av" style="background:${s.color}">${s.av}</div><div><div class="staff-name">${s.n}</div><div class="staff-role">${s.role}</div><div class="staff-status"><span class="bk ${sc[s.status]}">${s.status}</span></div></div></div>`).join('');}
+
+function rAnalytics(){const catd=[{l:'Calzado',v:18200,c:'#00b388'},{l:'Ropa',v:12400,c:'#2563eb'},{l:'Accesorios',v:9800,c:'#7c3aed'},{l:'Bolsos',v:5200,c:'#d97706'},{l:'Belleza',v:2720,c:'#ec4899'}];const mx=18200;document.getElementById('cat-prog').innerHTML=catd.map(d=>`<div class="prog-row"><div class="prog-label">${d.l}</div><div class="prog-track"><div class="prog-fill" style="width:${Math.round(d.v/mx*100)}%;background:${d.c}"></div></div><div class="prog-val" style="color:${d.c}">$${d.v.toLocaleString()}</div></div>`).join('');}
+
+function rSettings(){
+  const pays=[{n:'MODO QR',on:true},{n:'Mercado Pago QR',on:true},{n:'Google Pay',on:true},{n:'Tarjeta en cuotas',on:true},{n:'Transferencia 3.0',on:true},{n:'Ualá',on:true},{n:'Naranja X',on:false},{n:'Rapipago',on:false},{n:'Efectivo',on:true}];
+  document.getElementById('pay-toggles').innerHTML=pays.map(p=>`<div class="toggle-row"><div class="toggle-info"><div class="tl">${p.n}</div></div><div class="toggle${p.on?' on':''}" onclick="this.classList.toggle('on');toast('${p.n} '+(this.classList.contains('on')?'activado':'desactivado'))"></div></div>`).join('');
+  const notifs=[{n:'Stock bajo (menos de 10 unidades)',on:true},{n:'Pago fallido o rechazado',on:true},{n:'Nueva devolución procesada',on:true},{n:'Reporte diario por email',on:false},{n:'Alerta de cuotas vencidas',on:false}];
+  document.getElementById('notif-toggles').innerHTML=notifs.map(n=>`<div class="toggle-row"><div class="toggle-info"><div class="tl">${n.n}</div></div><div class="toggle${n.on?' on':''}" onclick="this.classList.toggle('on')"></div></div>`).join('');
+}
+</script>
+</body>
+</html>
