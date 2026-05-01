@@ -1,472 +1,1311 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>RetailOS Argentina — POS System</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RetailOS — Punto de Venta</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --sb:#1a2235;--sb-h:#243047;--sb-a:#2d3d5a;
-  --accent:#00b388;--accent-d:#009970;
-  --bg:#f0f2f5;--card:#fff;--border:#e2e6ea;
-  --text:#1a2235;--muted:#6b7a93;
-  --red:#e8373d;--amber:#f59e0b;
-  --modo:#003087;--gpay:#4285f4;--mp:#009ee3;--uala:#7b2d8b;
-  --naranja:#ff6900;--transfer:#00a651;
+  --bg:#1c2333;--panel:#222b3a;--card:#2a3547;--card2:#243040;
+  --tile:#2e7db5;--tileh:#266fa0;--tilea:#235f96;--tileah:#1d5080;
+  --tgreen:#4d7a00;--tred:#b33020;--tredh:#952818;
+  --pay:#7a9e00;--payh:#6a8a00;--yellow:#e8b800;--yellowh:#d0a600;
+  --text:#fff;--muted:#7a8fa8;--border:#2e3f55;
+  --accent:#00b388;--topbar:#141d2b;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:52px;background:var(--sb);display:flex;flex-direction:column;align-items:center;flex-shrink:0;transition:width .2s}
-.sidebar.open{width:200px}
-.logo-row{width:100%;padding:13px 0;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer}
-.sidebar.open .logo-row{justify-content:flex-start;padding:13px 14px;gap:9px}
-.logo-sq{width:26px;height:26px;border-radius:5px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.logo-sq svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.5}
-.logo-txt{display:none;font-size:16px;font-weight:700;color:#fff}
-.sidebar.open .logo-txt{display:block}
-.nav{flex:1;width:100%;padding:6px 0}
-.nl{display:none;font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1.1px;text-transform:uppercase;padding:10px 14px 3px}
-.sidebar.open .nl{display:block}
-.ni{display:flex;align-items:center;justify-content:center;padding:11px 0;cursor:pointer;color:rgba(255,255,255,.45);transition:all .12s;width:100%;position:relative}
-.sidebar.open .ni{justify-content:flex-start;padding:9px 14px;gap:9px}
-.ni:hover{background:var(--sb-h);color:rgba(255,255,255,.8)}
-.ni.on{background:var(--sb-a);color:#fff;border-left:3px solid var(--accent)}
-.ni svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
-.ni-lbl{display:none;font-size:12px;white-space:nowrap}
-.sidebar.open .ni-lbl{display:block}
-.nb{position:absolute;top:7px;right:7px;background:var(--red);color:#fff;font-size:9px;border-radius:8px;padding:1px 4px;display:none;line-height:1.4}
-.sidebar.open .nb{display:block}
-.sb-bot{width:100%;border-top:1px solid rgba(255,255,255,.07);padding:10px 0}
-.su{display:flex;align-items:center;justify-content:center;padding:8px 0;cursor:pointer}
-.sidebar.open .su{justify-content:flex-start;padding:8px 14px;gap:8px}
-.sav{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.si-inf{display:none;line-height:1.25}
-.sidebar.open .si-inf{display:block}
-.sn{font-size:12px;color:#fff;font-weight:500}
-.sr{font-size:10px;color:rgba(255,255,255,.35)}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{height:48px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
-.tb-ham{cursor:pointer;color:var(--muted)}.tb-ham svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
-.tb-title{font-size:14px;font-weight:700;flex:1}
-.sw{position:relative}.sw svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2}
-.si-box{background:#f0f2f5;border:1px solid var(--border);border-radius:6px;padding:6px 10px 6px 28px;font-size:12px;color:var(--text);width:180px}
-.tb-ic{width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);position:relative}
-.tb-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
-.nd{width:6px;height:6px;background:var(--red);border-radius:50%;position:absolute;top:5px;right:5px;border:1.5px solid #fff}
-.pos-btn{padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
-.pos-btn:hover{background:var(--accent-d)}
-.content{flex:1;overflow-y:auto;padding:16px 18px}
-.page{display:none}.page.on{display:block}
-.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.kc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;gap:10px;align-items:flex-start}
-.kico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.kico svg{width:16px;height:16px;stroke-width:2;fill:none}
-.klbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
-.kval{font-size:20px;font-weight:700;line-height:1}
-.ksub{font-size:10px;margin-top:3px}
-.up{color:#16a34a}.dn{color:var(--red)}
-.dg{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px}
-.crd{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
-.ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.ctitle{font-size:12px;font-weight:600}
-.clink{font-size:11px;color:var(--accent);cursor:pointer;font-weight:500}
-.bw{display:flex;align-items:flex-end;gap:5px;height:72px;margin-bottom:4px}
-.bwb{flex:1;border-radius:3px 3px 0 0;background:#e2e6ea;min-height:2px}
-.bwb.hi{background:var(--accent)}
-.bwl{display:flex;gap:5px}
-.bwld{flex:1;font-size:9px;color:var(--muted);text-align:center}
-.at{display:flex;flex-direction:column}
-.ar{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border)}
-.ar:last-child{border:none}
-.aic{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.aic svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2}
-.atxt{font-size:11px;color:var(--text);line-height:1.35}
-.atime{font-size:10px;color:var(--muted);margin-top:1px}
-.mt{width:100%;border-collapse:collapse}
-.mt th{background:#f8fafc;font-size:9px;color:var(--muted);text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
-.mt td{font-size:11px;padding:8px 10px;border-bottom:1px solid #f4f6f8}
-.mt tr:last-child td{border:none}.mt tbody tr:hover td{background:#f8fafc}
-.bk{display:inline-block;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700}
-.bkg{background:#d1fae5;color:#065f46}.bkr{background:#fee2e2;color:#991b1b}.bka{background:#fef3c7;color:#92400e}.bkb{background:#dbeafe;color:#1e40af}
-.stb{display:inline-flex;align-items:center;gap:4px}
-.stt{width:50px;height:4px;background:#e2e6ea;border-radius:2px;overflow:hidden;display:inline-block}
-.stf{height:100%;border-radius:2px}
-.pos-shell{display:grid;grid-template-columns:1fr 295px;height:calc(100vh - 48px);overflow:hidden}
-.pos-l{display:flex;flex-direction:column;background:#f7f9fc;border-right:1px solid var(--border);overflow:hidden}
-.ph{background:#fff;border-bottom:1px solid var(--border);padding:8px 12px;display:flex;gap:8px;align-items:center;flex-shrink:0}
-.psw{position:relative;flex:1}.psw svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2}
-.ps-inp{width:100%;background:#f0f2f5;border:1px solid var(--border);border-radius:6px;padding:7px 10px 7px 28px;font-size:12px;color:var(--text)}
-.scan-btn{padding:6px 10px;background:#f0f2f5;border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap;color:var(--muted);font-weight:500}
-.pc-bar{background:#fff;border-bottom:1px solid var(--border);padding:7px 12px;display:flex;gap:5px;flex-shrink:0;overflow-x:auto}
-.pc-bar::-webkit-scrollbar{display:none}
-.pc{padding:4px 12px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;border:1px solid var(--border);background:#f0f2f5;color:var(--muted)}
-.pc.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.pg-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:10px;overflow-y:auto;flex:1}
-.pcd{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 7px;text-align:center;cursor:pointer;transition:all .1s}
-.pcd:hover{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,179,136,.1)}
-.pcd:active{transform:scale(.95)}
-.pcd.oos{opacity:.4;pointer-events:none}
-.pe{font-size:24px;margin-bottom:4px;line-height:1}
-.pn{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;line-height:1.25}
-.pp{font-size:11px;color:var(--accent);font-weight:700}
-.pst{font-size:9px;color:var(--muted)}
-.pos-r{display:flex;flex-direction:column;background:#fff;overflow:hidden}
-.ch{padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
-.ch-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.ch-t{font-size:13px;font-weight:700}
-.clr{font-size:11px;color:var(--red);cursor:pointer;font-weight:500}
-.cust-row{background:#f7f9fc;border:1px dashed var(--border);border-radius:6px;padding:7px 9px;font-size:11px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px}
-.cust-row svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:2}
-.cb{flex:1;overflow-y:auto;padding:6px 0}
-.cempty{text-align:center;padding:28px 16px;color:var(--muted)}
-.ceico{font-size:28px;margin-bottom:6px}
-.cetxt{font-size:12px}
-.ci{display:flex;align-items:center;gap:6px;padding:7px 12px;border-bottom:1px solid #f4f6f8}
-.ci:hover{background:#fafafa}
-.cie{font-size:16px;flex-shrink:0}
-.cii{flex:1;min-width:0}
-.cin{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ciu{font-size:9px;color:var(--muted)}
-.cqc{display:flex;align-items:center;gap:3px}
-.qb{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);background:#f0f2f5;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);font-weight:600}
-.qb:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
-.cq{font-size:11px;font-weight:600;min-width:18px;text-align:center}
-.ctot{font-size:11px;font-weight:700;min-width:42px;text-align:right}
-.cdel{color:var(--muted);cursor:pointer;font-size:12px;margin-left:2px}
-.cdel:hover{color:var(--red)}
-.cf{border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0;background:#fff;overflow-y:auto;max-height:56vh}
-.cfr{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
-.cfr.tot{font-size:14px;font-weight:700;color:var(--text);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
-.disc-row{display:flex;gap:5px;margin:5px 0}
-.di{flex:1;background:#f0f2f5;border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:11px;color:var(--text)}
-.db{padding:5px 9px;background:#f0f2f5;border:1px solid var(--border);border-radius:5px;font-size:11px;cursor:pointer;font-weight:500}
-.cuotas-toggle{display:flex;align-items:center;gap:6px;margin:5px 0;cursor:pointer;font-size:11px;color:var(--muted);font-weight:500}
-.cuotas-toggle input{accent-color:var(--accent)}
-.cuotas-panel{background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px}
-.cuotas-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
-.cuotas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.cuota-opt{border:1.5px solid var(--border);border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer;font-size:10px;transition:all .1s}
-.cuota-opt:hover{border-color:var(--accent)}
-.cuota-opt.sel{border-color:var(--accent);background:#e6faf5}
-.cuota-n{font-size:12px;font-weight:700;color:var(--text)}
-.cuota-amt{font-size:9px;color:var(--accent);font-weight:600}
-.cuota-int{font-size:9px;color:var(--muted)}
-.pay-section{margin-top:6px}
-.pay-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
-.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
-.pay-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px}
-.pm{border-radius:6px;padding:6px 4px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .12s;text-align:center;line-height:1.2}
-.pm:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.pm:active{transform:scale(.96)}
-.pm-icon{font-size:15px;line-height:1}
-.pm-cash{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
-.pm-card{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
-.pm-modo{background:#e8f0fe;border-color:#93c5fd;color:#1e3a8a}
-.pm-gpay{background:#f8f9ff;border-color:#c7d2fe;color:#3730a3}
-.pm-mp{background:#e0f4fd;border-color:#7dd3fc;color:#0369a1}
-.pm-uala{background:#f5f3ff;border-color:#c4b5fd;color:#6d28d9}
-.pm-naranja{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
-.pm-transfer{background:#f0fdf4;border-color:#86efac;color:#15803d}
-.pm-qr{background:#fefce8;border-color:#fde68a;color:#92400e}
-.pm-rapipago{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
-.charge-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px}
-.charge-btn:hover{background:var(--accent-d)}
-.charge-btn:active{transform:scale(.99)}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px}
-.modal{background:#fff;border-radius:14px;width:100%;max-width:390px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.28)}
-.mbody{padding:16px}
-.modo-hd{background:var(--modo);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.modo-logo-txt{font-size:20px;font-weight:800;letter-spacing:-.5px}
-.modo-sub-txt{font-size:10px;opacity:.7;margin-top:1px}
-.qr-box{background:#fff;border-radius:10px;padding:14px;text-align:center;margin:12px 0;border:1px solid var(--border)}
-.qr-amt{font-size:22px;font-weight:800;color:var(--text);margin-bottom:2px}
-.qr-sub{font-size:11px;color:var(--muted)}
-.qr-timer{font-size:12px;color:var(--amber);font-weight:600;margin-top:6px}
-.banks-row{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:10px}
-.mbank{background:#f0f2f5;border-radius:4px;padding:2px 7px;font-size:9px;color:var(--muted);font-weight:600}
-.modo-info{font-size:10px;color:var(--muted);text-align:center;margin-bottom:10px}
-.modo-confirm{width:100%;padding:12px;background:var(--modo);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
-.mp-hd{background:linear-gradient(135deg,#009ee3,#0070ba);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.mp-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.mp-step{display:flex;align-items:flex-start;gap:10px;padding:10px;background:#f7f9fc;border-radius:8px;border:1px solid var(--border)}
-.mp-step-num{width:22px;height:22px;border-radius:50%;background:var(--mp);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.mp-step-txt{font-size:12px;font-weight:600;margin-bottom:2px}
-.mp-step-sub{font-size:10px;color:var(--muted)}
-.mp-qr-small{background:#f0f2f5;border-radius:8px;padding:10px;text-align:center;margin:10px 0}
-.mp-confirm{width:100%;padding:12px;background:#009ee3;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
-.gpay-hd{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.gpay-countries{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 12px}
-.gc{background:#f0f2f5;border-radius:4px;padding:2px 7px;font-size:10px;color:var(--muted);font-weight:500}
-.gpay-card-row{display:flex;align-items:center;gap:10px;background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px}
-.gpay-btn{width:100%;padding:12px;background:#000;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-.gpay-btn:hover{background:#222}
-.cuotas-hd{background:linear-gradient(135deg,#1e3a8a,#1e40af);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.cuotas-bank-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
-.cuotas-bank-tabs::-webkit-scrollbar{display:none}
-.cbt{padding:5px 12px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--border);background:#f0f2f5;color:var(--muted)}
-.cbt.on{background:#1e40af;color:#fff;border-color:#1e40af}
-.cuotas-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.cuota-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .1s}
-.cuota-row:hover{border-color:var(--accent)}
-.cuota-row.sel{border-color:var(--accent);background:#e6faf5}
-.cr-left .cr-n{font-size:13px;font-weight:700}
-.cr-left .cr-lbl{font-size:10px;color:var(--muted)}
-.cr-right{text-align:right}
-.cr-amt{font-size:13px;font-weight:700;color:var(--accent)}
-.cr-int{font-size:10px;color:var(--muted)}
-.cr-tag{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:700}
-.tag-free{background:#d1fae5;color:#065f46}
-.tag-int{background:#fef3c7;color:#92400e}
-.cuota-confirm{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
-.cuota-confirm:hover{background:var(--accent-d)}
-.receipt-hd{background:var(--accent);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.receipt-body{padding:16px}
-.receipt-store{text-align:center;margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--border)}
-.receipt-store h2{font-size:15px;font-weight:700}
-.receipt-store p{font-size:11px;color:var(--muted)}
-.receipt-items{margin-bottom:12px}
-.ri{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
-.receipt-totals{border-top:1px dashed var(--border);padding-top:10px;margin-bottom:12px}
-.rt{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--muted)}
-.rt.big{font-size:14px;font-weight:700;color:var(--text);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
-.receipt-pay{text-align:center;margin-bottom:14px}
-.receipt-pay-badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700}
-.receipt-footer{text-align:center;font-size:10px;color:var(--muted);line-height:1.7}
-.ra-btn{flex:1;padding:10px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#f0f2f5;color:var(--text)}
-.ra-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.pay-stats-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
-.ps-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.ps-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.ps-name{font-size:11px;font-weight:600;flex:1}
-.ps-bar-t{flex:2;height:5px;background:#e2e6ea;border-radius:3px;overflow:hidden}
-.ps-bar-f{height:100%;border-radius:3px}
-.ps-pct{font-size:11px;font-weight:700;min-width:80px;text-align:right}
-.ib{display:flex;gap:8px;margin-bottom:12px;align-items:center}
-.ii{flex:1;background:#fff;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--text)}
-.is{background:#fff;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text)}
-.ab{padding:7px 13px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
-.dt{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-.dt th{background:#f8fafc;font-size:9px;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
-.dt td{font-size:11px;padding:9px 12px;border-bottom:1px solid #f4f6f8}
-.dt tr:last-child td{border:none}.dt tbody tr:hover td{background:#f8fafc}
-.pnc{display:flex;align-items:center;gap:6px}
-.pth{width:26px;height:26px;border-radius:5px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.pnn{font-size:11px;font-weight:600}.psk{font-size:9px;color:var(--muted)}
-.el{color:var(--accent);font-size:10px;cursor:pointer;font-weight:500}
-.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:9px}
-.cc{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer}
-.cc:hover{border-color:var(--accent)}
-.cca{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0077cc);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin-bottom:7px}
-.ccn{font-size:12px;font-weight:600;margin-bottom:1px}.cce{font-size:10px;color:var(--muted);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ccr{display:flex;justify-content:space-between;padding-top:7px;border-top:1px solid var(--border)}
-.ccv{font-size:12px;font-weight:700}.ccl{font-size:9px;color:var(--muted)}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(50px);background:var(--sb);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;transition:transform .22s;z-index:999;white-space:nowrap;pointer-events:none;border-left:3px solid var(--accent)}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;font-size:13px}
+
+/* ── TOPBAR ── */
+.topbar{height:42px;background:var(--topbar);display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;margin-right:10px;font-family:'Impact','Arial Black',sans-serif}
+.logo em{color:var(--yellow);font-style:normal}
+.tbsp{flex:1}
+.tbi{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .1s}
+.tbi:hover{background:var(--card);color:#fff}
+.tbi svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tb-emp{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--card);border-radius:5px;cursor:pointer;font-size:11px;color:var(--muted)}
+.tb-emp:hover{background:var(--card2);color:#fff}
+.tb-emp-av{width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
+.tb-store{font-size:11px;color:var(--muted);padding:4px 8px;background:var(--card);border-radius:5px}
+.tb-time{font-size:11px;color:var(--yellow);font-weight:700;min-width:55px;text-align:center}
+.btn-soporte{color:var(--yellow);font-size:11px;font-weight:700;cursor:pointer;padding:4px 8px;border:1px solid rgba(232,184,0,.3);border-radius:4px}
+
+/* ── LAYOUT ── */
+.pos-body{flex:1;display:grid;grid-template-columns:248px 1fr;overflow:hidden;min-height:0}
+
+/* ── LEFT ── */
+.left{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+
+.srow{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);flex-shrink:0}
+.sbox{background:var(--card);border-right:1px solid var(--border);padding:7px 8px;display:flex;align-items:center;gap:5px}
+.sbox:last-child{border-right:none}
+.sbox svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:2;flex-shrink:0}
+.sbox input{background:transparent;border:none;color:#fff;font-size:11px;width:100%;outline:none}
+.sbox input::placeholder{color:var(--muted)}
+
+/* customer */
+.csect{padding:9px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.chd{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer}
+.cav{width:38px;height:38px;border-radius:50%;background:var(--card);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.cav.has{background:var(--accent);border-color:var(--accent)}
+.cav svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:1.5}
+.cname{font-size:13px;font-weight:700;line-height:1.2}
+.csub{font-size:9px;color:var(--muted)}
+.cstats{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;margin-bottom:8px}
+.cs{text-align:center;padding:2px 0}
+.csl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:1px}
+.csv{font-size:12px;font-weight:700}
+.cdv{background:var(--border)}
+.cbtns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.cbtn{padding:5px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;text-align:center;border:none;transition:opacity .1s}
+.cbtn:hover{opacity:.85}
+.cbtn.y{background:var(--yellow);color:#1a1200}
+.cbtn.o{background:transparent;color:#aaa;border:1px solid var(--border)}
+.cbtn.o:hover{color:#fff;border-color:#aaa}
+
+/* employee */
+.esect{padding:8px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.elbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-weight:700}
+.erow{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.eav{width:30px;height:30px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.eav svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:1.5}
+.ename{font-size:12px;font-weight:700}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.hc{padding:3px 1px;text-align:center;border-right:1px solid var(--border)}
+.hc:last-child{border-right:none}
+.hcl{font-size:7px;color:var(--muted);text-transform:uppercase;margin-bottom:1px}
+.hcv{font-size:10px;font-weight:700}
+
+/* sales */
+.ssect{padding:6px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.slbl{font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:4px}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.sc2{padding:3px 1px;text-align:center;border-right:1px solid var(--border)}
+.sc2:last-child{border-right:none}
+.scl{font-size:7px;color:var(--muted);text-transform:uppercase;margin-bottom:1px}
+.scv{font-size:10px;font-weight:700}
+
+/* cart */
+.cart-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.cart-scroll{flex:1;overflow-y:auto;padding:6px 11px}
+.clbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;font-weight:700}
+.ci{display:flex;align-items:center;padding:4px 0;border-bottom:1px solid rgba(46,63,85,.6);gap:3px}
+.cie{font-size:12px;flex-shrink:0}
+.cin{flex:1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.ciu{font-size:8px;color:var(--muted)}
+.ciq{display:flex;align-items:center;gap:2px}
+.ciqb{width:15px;height:15px;border-radius:3px;border:1px solid var(--border);background:var(--card);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;line-height:1}
+.ciqb:hover{background:var(--accent);border-color:var(--accent)}
+.ciqn{font-size:9px;font-weight:700;min-width:14px;text-align:center}
+.cip{color:var(--yellow);font-weight:700;font-size:10px;min-width:38px;text-align:right}
+.cix{color:var(--muted);cursor:pointer;font-size:10px;margin-left:2px;line-height:1}
+.cix:hover{color:#e74c3c}
+.cempty{font-size:10px;color:var(--muted);font-style:italic;padding:5px 0}
+
+/* cart totals */
+.carttot{padding:6px 11px;background:var(--card2);border-top:1px solid var(--border);flex-shrink:0}
+.ctrow{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px}
+.ctrow.big{font-size:12px;font-weight:700;color:#fff;padding-top:3px;border-top:1px solid var(--border);margin-top:2px}
+
+/* ── RIGHT ── */
+.right{display:flex;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg)}
+.garea{flex:1;overflow-y:auto;padding:3px 3px 0}
+
+/* category tabs */
+.cat-tabs{display:flex;gap:2px;padding:3px 3px 0;flex-wrap:wrap;flex-shrink:0}
+.ctab{padding:4px 10px;border-radius:4px 4px 0 0;font-size:10px;font-weight:700;cursor:pointer;background:var(--card);color:var(--muted);border:1px solid var(--border);border-bottom:none;transition:all .1s}
+.ctab:hover{color:#fff;background:var(--card2)}
+.ctab.on{background:var(--tile);color:#fff;border-color:var(--tile)}
+
+/* product grid */
+.prod-area{background:var(--card2);border:1px solid var(--border);border-radius:0 5px 5px 5px;padding:4px;margin:0 3px;flex-shrink:0}
+.prow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.prow:last-child{margin-bottom:0}
+
+/* tiles */
+.tile{background:var(--tile);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:5px 3px;min-height:56px;transition:background .08s,transform .05s;position:relative;text-align:center;user-select:none;border:none;color:#fff;width:100%}
+.tile:hover{background:var(--tileh)}
+.tile:active{transform:scale(.93)}
+.tile.y{background:var(--yellow);color:#1a1200}.tile.y:hover{background:var(--yellowh)}
+.tile.g{background:var(--tgreen)}.tile.g:hover{background:#3d6200}
+.tile.a{background:var(--tilea)}.tile.a:hover{background:var(--tileah)}
+.tile.r{background:var(--tred)}.tile.r:hover{background:var(--tredh)}
+.tile.dim{background:#1e2838;cursor:default;pointer-events:none;opacity:.4}
+.ti{font-size:15px;margin-bottom:2px;line-height:1}
+.ti svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tl{font-size:9px;font-weight:600;line-height:1.2;word-break:break-word}
+.ts{font-size:7px;color:rgba(255,255,255,.5);margin-top:1px}
+.tfk{position:absolute;top:2px;left:3px;font-size:7px;color:rgba(255,255,255,.4);font-weight:700}
+.tbadge{position:absolute;top:2px;right:2px;background:#e74c3c;color:#fff;font-size:7px;font-weight:700;border-radius:5px;padding:1px 3px;line-height:1.3}
+.tcheck{position:absolute;top:2px;right:2px;background:var(--accent);color:#fff;font-size:8px;border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* action area */
+.arows{flex-shrink:0;padding:0 3px 2px;display:flex;flex-direction:column;gap:2px}
+.arow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+
+/* bottom bar */
+.bbar{display:grid;grid-template-columns:56px 56px 1fr 2fr;gap:2px;padding:2px 3px 3px;flex-shrink:0;background:var(--topbar)}
+.bbt{border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;min-height:56px;user-select:none;border:none;color:#fff;transition:opacity .1s}
+.bbt:hover{opacity:.88}
+.bbt:active{transform:scale(.97)}
+.bbt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.bb-y{background:var(--yellow);color:#1a1200}
+.bb-l{background:var(--tilea)}
+.bb-r{background:var(--tred);font-size:15px;font-weight:800;letter-spacing:.5px}.bb-r:hover{background:var(--tredh)}
+.bb-p{background:var(--pay);flex-direction:column}.bb-p:hover{background:var(--payh)}
+.bbfk{font-size:7px;color:rgba(255,255,255,.5);margin-bottom:1px}
+.bbpa{font-size:18px;font-weight:800;line-height:1}
+.bbsub{font-size:8px;color:rgba(255,255,255,.65);margin-top:2px}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:12px}
+.modal{background:#1e2a3a;border-radius:8px;width:100%;max-width:420px;border:1px solid var(--border);display:flex;flex-direction:column;max-height:94vh}
+.modal.wide{max-width:560px}
+.mhd{background:#141d2b;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;border-radius:8px 8px 0 0}
+.mht{font-size:12px;font-weight:700}
+.mhx{cursor:pointer;color:var(--muted);font-size:17px;line-height:1}.mhx:hover{color:#fff}
+.mbody{padding:12px;overflow-y:auto;flex:1}
+
+.mamt{text-align:center;padding:10px;background:var(--card);border-radius:6px;margin-bottom:10px}
+.mamtl{font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+.mamtv{font-size:26px;font-weight:800;color:var(--yellow)}
+
+.mfi{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:7px 9px;font-size:11px;color:#fff;width:100%;margin-bottom:7px}
+.mfi:focus{outline:none;border-color:var(--accent)}
+.mfl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:3px;display:block}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fg{margin-bottom:7px}
+
+.pmg{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px}
+.pmb{border-radius:6px;padding:9px 5px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .1s;text-align:center}
+.pmb:hover{border-color:var(--accent)}
+.pmb.sel{border-color:var(--accent);background:#112a22}
+.pmi{font-size:16px;line-height:1}
+
+.cuotas-wrap{background:var(--card);border-radius:6px;padding:9px;margin-top:7px}
+.btabs{display:flex;gap:4px;margin-bottom:7px;overflow-x:auto;padding-bottom:2px}
+.btabs::-webkit-scrollbar{display:none}
+.btab2{padding:3px 9px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid var(--border);background:transparent;color:var(--muted)}
+.btab2.on{background:#1e40af;color:#fff;border-color:#1e40af}
+.copts{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.co{border-radius:5px;padding:6px 3px;text-align:center;cursor:pointer;border:1.5px solid var(--border);background:transparent;transition:all .1s}
+.co:hover{border-color:var(--accent)}.co.sel{border-color:var(--accent);background:#112a22}
+.con{font-size:11px;font-weight:700}.coa{font-size:8px;color:var(--accent);font-weight:600;margin-top:1px}.coi{font-size:7px;color:var(--muted)}
+
+.conf-btn{width:100%;padding:10px;border:none;border-radius:6px;font-size:12px;font-weight:800;cursor:pointer;margin-top:6px}
+.conf-g{background:var(--pay);color:#fff}.conf-g:hover{background:var(--payh)}
+.conf-r{background:var(--tred);color:#fff}.conf-r:hover{background:var(--tredh)}
+.conf-b{background:var(--tilea);color:#fff}.conf-b:hover{background:var(--tileah)}
+.conf-y{background:var(--yellow);color:#1a1200}
+
+/* receipt */
+.rov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:400;padding:12px}
+.rbox{background:#fff;border-radius:8px;width:100%;max-width:288px;padding:16px;color:#1a2235;font-family:'Courier New',monospace;max-height:94vh;overflow-y:auto}
+.rstore{text-align:center;margin-bottom:8px}
+.rstore h2{font-size:14px;font-weight:800}
+.rstore p{font-size:9px;color:#666}
+.ritems{border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:6px 0;margin:6px 0}
+.ri{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
+.rtots{margin-bottom:7px}
+.rtrow{display:flex;justify-content:space-between;font-size:10px;color:#666;margin-bottom:2px}
+.rtotal{display:flex;justify-content:space-between;font-size:13px;font-weight:800;border-top:2px solid #1a2235;padding-top:4px;margin-top:3px}
+.rmeth{text-align:center;margin:7px 0;font-size:10px;background:#e6faf5;color:#065f46;padding:5px;border-radius:4px;font-weight:700}
+.rfooter{text-align:center;font-size:8px;color:#999;line-height:1.7}
+.ract{display:flex;gap:5px;margin-top:9px}
+.rbt{flex:1;padding:7px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid #ddd;background:#f5f5f5;color:#333;font-family:sans-serif}
+.rbt.p{background:#5a7a00;color:#fff;border-color:#5a7a00}
+
+/* list items */
+.litem{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.litem:hover{background:rgba(255,255,255,.02);border-radius:4px;padding-left:4px}
+.litem:last-child{border:none}
+.li-id{font-size:10px;font-weight:700;min-width:48px;color:var(--yellow)}
+.li-info{flex:1}
+.li-title{font-size:11px;font-weight:600}
+.li-sub{font-size:9px;color:var(--muted)}
+.li-right{text-align:right}
+.li-amt{font-size:11px;font-weight:700;color:var(--yellow)}
+.bk{display:inline-block;padding:2px 6px;border-radius:7px;font-size:8px;font-weight:700;margin-top:2px}
+.bkg{background:#d1fae5;color:#065f46}.bkr{background:#fee2e2;color:#991b1b}.bka{background:#fef3c7;color:#92400e}
+
+/* stock table */
+.sitem{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.sitem:hover{opacity:.85}
+.sitem:last-child{border:none}
+.sie{font-size:17px;flex-shrink:0}
+.siinfo{flex:1}
+.sinm{font-size:11px;font-weight:700}
+.sisku{font-size:8px;color:var(--muted)}
+.siprice{font-size:11px;font-weight:700;color:var(--yellow);min-width:36px;text-align:right}
+.sist{font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;min-width:52px;text-align:center}
+
+/* cash tabs */
+.cash-tabs{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden;margin-bottom:10px}
+.ctab2{flex:1;padding:7px;text-align:center;cursor:pointer;font-size:11px;font-weight:700;color:var(--muted);border:none;background:transparent}
+.ctab2.on{background:var(--tilea);color:#fff}
+
+/* discount grid */
+.disc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:9px}
+.dbt{padding:7px;background:var(--card);border:1px solid var(--border);border-radius:5px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;text-align:center}
+.dbt:hover{border-color:var(--accent)}.dbt.sel{border-color:var(--accent);background:#112a22;color:var(--accent)}
+
+/* clock */
+.clock-disp{background:var(--card);border-radius:7px;padding:14px;text-align:center;margin-bottom:10px}
+.clock-time{font-size:26px;font-weight:800;color:var(--yellow)}
+.clock-date{font-size:9px;color:var(--muted);margin-top:3px}
+
+/* GC */
+.gc-disp{background:var(--card);border-radius:7px;padding:14px;text-align:center;margin-bottom:10px}
+.gc-bal{font-size:26px;font-weight:800;color:var(--yellow)}
+.gc-code-lbl{font-size:15px;font-weight:800;letter-spacing:2px;margin-bottom:4px}
+
+/* promo card */
+.promo-c{background:var(--card);border-radius:6px;padding:9px;margin-bottom:6px;border-left:3px solid var(--accent)}
+.promo-nm{font-size:11px;font-weight:700;margin-bottom:2px}
+.promo-dc{font-size:9px;color:var(--muted);margin-bottom:5px}
+.promo-bd{display:inline-block;background:var(--accent);color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:6px}
+
+/* coupon */
+.coup-c{background:var(--card);border-radius:6px;padding:9px;margin-bottom:5px;display:flex;align-items:center;gap:8px;border:1px solid var(--border)}
+.coup-code{font-size:12px;font-weight:800;letter-spacing:1px;color:var(--yellow)}
+.coup-info{flex:1}
+.coup-desc{font-size:10px;font-weight:600}
+.coup-valid{font-size:8px;color:var(--muted)}
+
+/* ship */
+.ship-c{background:var(--card);border:1.5px solid var(--border);border-radius:6px;padding:9px;margin-bottom:5px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.ship-c:hover{border-color:var(--accent)}.ship-c.sel{border-color:var(--accent);background:#112a22}
+.ship-nm{font-size:11px;font-weight:700}
+.ship-tm{font-size:9px;color:var(--muted)}
+.ship-pr{font-size:12px;font-weight:800;color:var(--yellow);margin-left:auto}
+
+/* pending */
+.pend-c{background:var(--card);border-radius:6px;padding:9px;margin-bottom:5px;cursor:pointer;border:1px solid var(--border)}
+.pend-c:hover{border-color:var(--accent)}
+.pend-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.pend-id{font-size:10px;font-weight:700;color:var(--accent)}
+.pend-amt{font-size:12px;font-weight:800;color:var(--yellow)}
+.pend-dt{font-size:9px;color:var(--muted)}
+
+/* xreport */
+.xrw{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px}
+.xrw:last-child{border:none}
+.xrl{color:var(--muted)}.xrv{font-weight:700}
+.xrtot{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:800;border-top:2px solid var(--border);color:var(--yellow)}
+
+/* close day steps */
+.cd-step{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cd-step:last-child{border:none}
+.cd-num{width:22px;height:22px;border-radius:50%;background:var(--tilea);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px}
+.cd-t{font-size:11px;font-weight:700;margin-bottom:2px}
+.cd-s{font-size:9px;color:var(--muted)}
+
+/* balance row */
+.bal-row{background:var(--card);border-radius:5px;padding:8px;margin-bottom:8px}
+.bal-line{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
+.bal-line:last-child{margin:0}
+.bal-lbl{color:var(--muted)}
+.bal-val{font-weight:700;color:var(--yellow)}
+
+/* emp list */
+.emp-sel{display:flex;align-items:center;justify-content:space-between;padding:8px 9px;background:var(--card);border-radius:5px;margin-bottom:5px;border:1px solid var(--border);cursor:pointer}
+.emp-sel:hover{border-color:var(--accent)}
+.emp-sel-name{font-size:11px;font-weight:700}
+.emp-sel-role{font-size:9px;color:var(--muted)}
+
+/* pickup */
+.pickup-c{background:var(--card);border-radius:6px;padding:9px;margin-bottom:5px;border:1px solid var(--border)}
+.pickup-c:hover{border-color:var(--accent)}
+.pickup-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+
+/* notes */
+.nota-area{width:100%;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:8px;font-size:11px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;margin-bottom:7px}
+.nota-area:focus{outline:none;border-color:var(--accent)}
+
+/* section info box */
+.info-box{background:var(--card);border-radius:6px;padding:9px;margin-bottom:8px}
+.ib-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
+.ib-lbl{color:var(--muted)}.ib-val{font-weight:700;color:var(--yellow)}
+
+/* toast */
+.toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(60px);background:#141d2b;color:#fff;padding:7px 14px;border-radius:20px;font-size:11px;font-weight:600;transition:transform .2s;z-index:999;white-space:nowrap;pointer-events:none;border-left:3px solid var(--accent)}
 .toast.on{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
-<div class="app">
-<div class="sidebar" id="sb">
-  <div class="logo-row" onclick="toggleSb()">
-    <div class="logo-sq"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-    <span class="logo-txt">RetailOS AR</span>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><em>Σ</em>RPLY</div>
+  <div class="tb-store">Tienda Principal · Córdoba</div>
+  <div class="tbsp"></div>
+  <div class="tb-time" id="tb-time">--:--</div>
+  <div class="tbi" title="Alertas"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+  <div class="tbi" title="Sincronización en nube"><svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg></div>
+  <div class="tbi" title="Señal de red"><svg viewBox="0 0 24 24"><line x1="1" y1="20" x2="1" y2="14"/><line x1="6" y1="20" x2="6" y2="10"/><line x1="11" y1="20" x2="11" y2="4"/><line x1="16" y1="20" x2="16" y2="8"/><line x1="21" y1="20" x2="21" y2="12"/></svg></div>
+  <div class="tbi" title="Pantalla cliente"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+  <div class="tbi" title="Imprimir último ticket"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+  <div class="tbi" title="Menú"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+  <div class="tbi" title="Configuración"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg></div>
+  <div class="tb-emp" onclick="openM('m-emp')">
+    <div class="tb-emp-av" id="emp-av">SE</div>
+    <span id="emp-short">Support ERPLY</span>
   </div>
-  <div class="nav">
-    <div class="nl">Principal</div>
-    <div class="ni on" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="ni-lbl">Dashboard</span></div>
-    <div class="ni" onclick="go('pos',this)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="ni-lbl">Point of Sale</span></div>
-    <div class="ni" onclick="go('inventory',this)"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="ni-lbl">Inventario</span></div>
-    <div class="ni" onclick="go('customers',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg><span class="ni-lbl">Clientes</span><span class="nb">214</span></div>
-    <div class="nl">Finanzas</div>
-    <div class="ni" onclick="go('payments',this)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span class="ni-lbl">Pagos &amp; Stats</span></div>
-    <div class="ni" onclick="go('cuotas',this)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span class="ni-lbl">Cuotas &amp; Promo</span></div>
-    <div class="nl">Config</div>
-    <div class="ni" onclick="toast('Configuración del sistema')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg><span class="ni-lbl">Ajustes</span></div>
-  </div>
-  <div class="sb-bot">
-    <div class="su"><div class="sav">JD</div><div class="si-inf"><div class="sn">John Doe</div><div class="sr">Gerente de Tienda</div></div></div>
-  </div>
+  <div class="btn-soporte">Soporte ▾</div>
 </div>
-<div class="main">
-  <div class="topbar">
-    <div class="tb-ham" onclick="toggleSb()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
-    <div class="tb-title" id="tb-t">Dashboard</div>
-    <div class="sw"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="si-box" placeholder="Buscar..." /></div>
-    <div class="tb-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><div class="nd"></div></div>
-    <button class="pos-btn" onclick="go('pos',document.querySelectorAll('.ni')[1])">Abrir POS</button>
-  </div>
-  <div class="content" id="ct">
-    <div class="page on" id="pg-dashboard">
-      <div class="krow">
-        <div class="kc"><div class="kico" style="background:#e6faf5"><svg viewBox="0 0 24 24" stroke="#00b388"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="klbl">Ventas hoy</div><div class="kval">$3,842</div><div class="ksub up">↑ 12.4%</div></div></div>
-        <div class="kc"><div class="kico" style="background:#eef4ff"><svg viewBox="0 0 24 24" stroke="#4f7fe8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><div class="klbl">Transacciones</div><div class="kval">127</div><div class="ksub up">↑ 8 más</div></div></div>
-        <div class="kc"><div class="kico" style="background:#fff8e6"><svg viewBox="0 0 24 24" stroke="#f59e0b"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="klbl">Clientes nuevos</div><div class="kval">14</div><div class="ksub up">↑ 3 hoy</div></div></div>
-        <div class="kc"><div class="kico" style="background:#fee2e2"><svg viewBox="0 0 24 24" stroke="#e8373d"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="klbl">Ticket promedio</div><div class="kval">$30.25</div><div class="ksub dn">↓ 2.1%</div></div></div>
+
+<!-- MAIN -->
+<div class="pos-body">
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="srow">
+      <div class="sbox"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><input placeholder="Cliente" oninput="searchCust(this.value)" id="cust-inp"/></div>
+      <div class="sbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="Producto" oninput="searchProd(this.value)"/></div>
+    </div>
+
+    <!-- Cliente -->
+    <div class="csect">
+      <div class="chd" onclick="cycleCust()">
+        <div class="cav" id="cav"><svg viewBox="0 0 24 24" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19" stroke="#7a8fa8" stroke-width="1.5"/><line x1="5" y1="12" x2="19" y2="12" stroke="#7a8fa8" stroke-width="1.5"/></svg></div>
+        <div><div class="cname" id="cname">Cliente por defecto</div><div class="csub" id="csub">Sin cuenta registrada</div></div>
       </div>
-      <div class="dg">
-        <div class="crd"><div class="ct"><span class="ctitle">Ventas esta semana</span><span class="clink">Ver reporte →</span></div><div class="bw" id="wb"></div><div class="bwl"><span class="bwld">L</span><span class="bwld">M</span><span class="bwld">X</span><span class="bwld">J</span><span class="bwld">V</span><span class="bwld">S</span><span class="bwld">D</span></div></div>
-        <div class="crd"><div class="ct"><span class="ctitle">Actividad reciente</span></div><div class="at">
-          <div class="ar"><div class="aic" style="background:var(--accent)"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="atxt">Venta #1048 — $84.50 — MODO QR</div><div class="atime">2 min atrás</div></div></div>
-          <div class="ar"><div class="aic" style="background:var(--gpay)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/></svg></div><div><div class="atxt">Google Pay — $210.00 — James W.</div><div class="atime">15 min atrás</div></div></div>
-          <div class="ar"><div class="aic" style="background:var(--mp)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></div><div><div class="atxt">MP QR — $65.00 — 3 cuotas sin int.</div><div class="atime">34 min atrás</div></div></div>
-          <div class="ar"><div class="aic" style="background:#f59e0b"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div><div class="atxt">Stock bajo: Levi's 501 (3 restantes)</div><div class="atime">1 hr atrás</div></div></div>
-        </div></div>
+      <div class="cstats">
+        <div class="cs"><div class="csl">CRÉDITO</div><div class="csv" id="cstore">$0</div></div>
+        <div class="cdv"></div>
+        <div class="cs"><div class="csl">PUNTOS</div><div class="csv" id="creward">0</div></div>
+        <div class="cdv"></div>
+        <div class="cs"><div class="csl">VISITAS</div><div class="csv" id="cvisit">0</div></div>
       </div>
-      <div class="crd"><div class="ct"><span class="ctitle">Productos más vendidos</span><span class="clink">Ver todos →</span></div>
-        <table class="mt"><thead><tr><th>Producto</th><th>Categoría</th><th>Vendido</th><th>Revenue</th><th>Stock</th><th>Estado</th></tr></thead><tbody>
-          <tr><td><div style="display:flex;align-items:center;gap:6px"><span>👟</span>Nike Air Max</div></td><td>Calzado</td><td>18</td><td>$2,160</td><td><div class="stb"><div class="stt"><div class="stf" style="width:72%;background:#00b388"></div></div>72</div></td><td><span class="bk bkg">En stock</span></td></tr>
-          <tr><td><div style="display:flex;align-items:center;gap:6px"><span>👖</span>Levi's 501</div></td><td>Ropa</td><td>12</td><td>$899</td><td><div class="stb"><div class="stt"><div class="stf" style="width:12%;background:#e8373d"></div></div>3</div></td><td><span class="bk bkr">Stock bajo</span></td></tr>
-          <tr><td><div style="display:flex;align-items:center;gap:6px"><span>🎒</span>Mochila</div></td><td>Bolsos</td><td>9</td><td>$540</td><td><div class="stb"><div class="stt"><div class="stf" style="width:45%;background:#f59e0b"></div></div>22</div></td><td><span class="bk bka">Medio</span></td></tr>
-          <tr><td><div style="display:flex;align-items:center;gap:6px"><span>⌚</span>Reloj Casio</div></td><td>Accesorios</td><td>6</td><td>$480</td><td><div class="stb"><div class="stt"><div class="stf" style="width:88%;background:#00b388"></div></div>44</div></td><td><span class="bk bkg">En stock</span></td></tr>
-        </tbody></table>
+      <div class="cbtns">
+        <button class="cbtn y" onclick="openInvoice()">📋 FACTURA</button>
+        <button class="cbtn o" onclick="openPurchases()">COMPRAS</button>
       </div>
     </div>
-    <div class="page" id="pg-pos" style="margin:-16px -18px;height:calc(100vh - 48px)">
-      <div class="pos-shell">
-        <div class="pos-l">
-          <div class="ph"><div class="psw"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="ps-inp" placeholder="Buscar o escanear código..." oninput="sProds(this.value)" /></div><button class="scan-btn" onclick="toast('📷 Escáner activado')">📷 Escanear</button></div>
-          <div class="pc-bar" id="pcbar"></div>
-          <div class="pg-wrap" id="pg-grid"></div>
-        </div>
-        <div class="pos-r">
-          <div class="ch"><div class="ch-row"><span class="ch-t">Venta actual</span><span class="clr" onclick="clrCart()">✕ Limpiar</span></div><div class="cust-row" onclick="toast('Buscar cliente por nombre o DNI')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Agregar cliente a la venta</div></div>
-          <div class="cb" id="cart-b"><div class="cempty"><div class="ceico">🛒</div><div class="cetxt">Seleccione productos para comenzar</div></div></div>
-          <div class="cf" id="cart-f" style="display:none">
-            <div class="cfr"><span>Subtotal</span><span id="cf-s">$0.00</span></div>
-            <div class="disc-row"><input class="di" placeholder="Código o % descuento" id="dc-in"/><button class="db" onclick="applyDc()">Aplicar</button></div>
-            <div class="cfr"><span>Descuento</span><span id="cf-d" style="color:var(--accent)">—</span></div>
-            <div class="cfr"><span>IVA (21%)</span><span id="cf-t">$0.00</span></div>
-            <div class="cfr tot"><span>Total ARS</span><span id="cf-tot">$0.00</span></div>
-            <label class="cuotas-toggle"><input type="checkbox" id="cuotas-chk" onchange="toggleCuotas(this.checked)"> 💳 Pagar en cuotas</label>
-            <div id="cuotas-mini" style="display:none" class="cuotas-panel"><div class="cuotas-title">Seleccionar cuotas</div><div style="font-size:10px;color:var(--muted);margin-bottom:6px">Total: <span id="cm-total">$0.00</span></div><div class="cuotas-grid" id="cm-grid"></div></div>
-            <div class="pay-section">
-              <div class="pay-label">Métodos de pago</div>
-              <div class="pay-grid"><div class="pm pm-cash" onclick="checkout('Efectivo')"><div class="pm-icon">💵</div>Efectivo</div><div class="pm pm-card" onclick="openCuotas()"><div class="pm-icon">💳</div>Tarjeta + Cuotas</div></div>
-              <div class="pay-label" style="margin-top:5px">🇦🇷 Argentina</div>
-              <div class="pay-grid"><div class="pm pm-modo" onclick="openModo()"><div class="pm-icon">🏦</div>MODO QR</div><div class="pm pm-mp" onclick="openMP()"><div class="pm-icon">🔵</div>Mercado Pago</div></div>
-              <div class="pay-grid"><div class="pm pm-transfer" onclick="checkout('Transferencia 3.0')"><div class="pm-icon">⚡</div>Transfer. 3.0</div><div class="pm pm-naranja" onclick="checkout('Naranja X')"><div class="pm-icon">🟠</div>Naranja X</div></div>
-              <div class="pay-grid"><div class="pm pm-uala" onclick="checkout('Ualá')"><div class="pm-icon">💜</div>Ualá</div><div class="pm pm-rapipago" onclick="checkout('Rapipago')"><div class="pm-icon">🧾</div>Rapipago</div></div>
-              <div class="pay-label" style="margin-top:5px">🌎 LATAM Digital</div>
-              <div class="pay-grid"><div class="pm pm-gpay" onclick="openGpay()"><div class="pm-icon">📱</div>Google Pay</div><div class="pm pm-qr" onclick="checkout('QR / CBU / CVU')"><div class="pm-icon">📷</div>QR / CVU</div></div>
-            </div>
-            <button class="charge-btn" onclick="openModo()">Cobrar $<span id="c-amt">0.00</span> →</button>
-          </div>
-        </div>
+
+    <!-- Empleado -->
+    <div class="esect">
+      <div class="elbl">EMPLEADO ACTIVO</div>
+      <div class="erow">
+        <div class="eav"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="ename" id="emp-name">Support ERPLY</div>
+      </div>
+      <div class="elbl">Horas trabajadas</div>
+      <div class="hgrid">
+        <div class="hc"><div class="hcl">HOY</div><div class="hcv" id="h-tod">0:00</div></div>
+        <div class="hc"><div class="hcl">AYER</div><div class="hcv">4:22</div></div>
+        <div class="hc"><div class="hcl">SEMANA</div><div class="hcv">18:15</div></div>
+        <div class="hc"><div class="hcl">MES</div><div class="hcv">72:40</div></div>
       </div>
     </div>
-    <div class="page" id="pg-inventory"><div class="ib"><input class="ii" placeholder="Buscar por nombre, SKU..." oninput="fInv(this.value)" /><select class="is" onchange="fInvC(this.value)"><option value="">Todas</option><option>Calzado</option><option>Ropa</option><option>Bolsos</option><option>Accesorios</option><option>Belleza</option></select><button class="ab" onclick="toast('Nuevo producto')">+ Agregar</button></div><table class="dt"><thead><tr><th>Producto</th><th>SKU</th><th>Cat.</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr></thead><tbody id="inv-b"></tbody></table></div>
-    <div class="page" id="pg-customers"><div class="ib"><input class="ii" placeholder="Buscar clientes..." /><button class="ab" onclick="toast('Nuevo cliente')">+ Agregar</button></div><div class="cg" id="cg"></div></div>
-    <div class="page" id="pg-payments">
-      <div class="krow"><div class="kc"><div class="kico" style="background:#e6faf5"><svg viewBox="0 0 24 24" stroke="#00b388" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><div class="klbl">Total procesado</div><div class="kval">$48,320</div><div class="ksub up">↑ 18% este mes</div></div></div><div class="kc"><div class="kico" style="background:#e8f0fe"><div style="font-size:16px;font-weight:800;color:#003087;line-height:1">M</div></div><div><div class="klbl">MODO QR</div><div class="kval">$14,200</div><div class="ksub up">29.4% del total</div></div></div><div class="kc"><div class="kico" style="background:#e0f4fd"><div style="font-size:14px;line-height:1">🔵</div></div><div><div class="klbl">Mercado Pago</div><div class="kval">$9,800</div><div class="ksub up">20.3% del total</div></div></div><div class="kc"><div class="kico" style="background:#f8f9ff"><div style="font-size:13px;font-weight:800;font-style:italic;color:#4285f4;line-height:1">G</div></div><div><div class="klbl">Google Pay</div><div class="kval">$8,640</div><div class="ksub up">17.9% del total</div></div></div></div>
-      <div class="pay-stats-card"><div class="ct" style="margin-bottom:14px"><span class="ctitle">Distribución de métodos de pago — Mes actual</span></div><div id="pst-list"></div></div>
-      <div class="crd"><div class="ct"><span class="ctitle">Transacciones recientes</span></div><table class="mt"><thead><tr><th>#</th><th>Cliente</th><th>Método</th><th>Cuotas</th><th>Monto</th><th>Estado</th><th>Hora</th></tr></thead><tbody><tr><td>#1048</td><td>Maria G.</td><td><span class="bk" style="background:#e8f0fe;color:#1e3a8a">MODO QR</span></td><td>—</td><td>$84.50</td><td><span class="bk bkg">✓ OK</span></td><td>14:32</td></tr><tr><td>#1047</td><td>James W.</td><td><span class="bk" style="background:#f8f9ff;color:#3730a3">Google Pay</span></td><td>—</td><td>$210.00</td><td><span class="bk bkg">✓ OK</span></td><td>14:18</td></tr><tr><td>#1046</td><td>Priya P.</td><td><span class="bk" style="background:#e0f4fd;color:#0369a1">MP QR</span></td><td>3 s/int</td><td>$65.00</td><td><span class="bk bkg">✓ OK</span></td><td>13:45</td></tr><tr><td>#1045</td><td>Tom C.</td><td><span class="bk" style="background:#f0fdf4;color:#15803d">Transfer 3.0</span></td><td>—</td><td>$38.00</td><td><span class="bk bkg">✓ OK</span></td><td>13:20</td></tr><tr><td>#1044</td><td>Sara L.</td><td><span class="bk" style="background:#f0f2f5;color:#1e40af">Tarjeta</span></td><td>12 c/int</td><td>$152.00</td><td><span class="bk bkg">✓ OK</span></td><td>12:58</td></tr></tbody></table></div>
+
+    <!-- Ventas -->
+    <div class="ssect">
+      <div class="slbl">Ventas $</div>
+      <div class="sgrid">
+        <div class="sc2"><div class="scl">HOY</div><div class="scv" id="s-tod">0.00</div></div>
+        <div class="sc2"><div class="scl">AYER</div><div class="scv">900</div></div>
+        <div class="sc2"><div class="scl">SEMANA</div><div class="scv">3,240</div></div>
+        <div class="sc2"><div class="scl">MES</div><div class="scv">14,800</div></div>
+      </div>
     </div>
-    <div class="page" id="pg-cuotas">
-      <div class="krow" style="grid-template-columns:repeat(3,1fr)"><div class="kc"><div class="kico" style="background:#eff6ff"><svg viewBox="0 0 24 24" stroke="#1e40af" fill="none" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="klbl">Ventas en cuotas</div><div class="kval">$18,420</div><div class="ksub up">38.1% del total</div></div></div><div class="kc"><div class="kico" style="background:#e6faf5"><div style="font-size:14px">💳</div></div><div><div class="klbl">Sin interés</div><div class="kval">$11,200</div><div class="ksub up">60.8% de cuotas</div></div></div><div class="kc"><div class="kico" style="background:#fef3c7"><div style="font-size:14px">📊</div></div><div><div class="klbl">Cuota promedio</div><div class="kval">6.4x</div><div class="ksub">Cuotas por venta</div></div></div></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="crd"><div class="ct"><span class="ctitle">Planes sin interés activos</span></div><div style="display:flex;flex-direction:column;gap:6px" id="promo-list"></div></div><div class="crd"><div class="ct"><span class="ctitle">Distribución de cuotas</span></div><div id="cuotas-dist"></div></div></div>
+
+    <!-- Carrito -->
+    <div class="cart-wrap">
+      <div class="cart-scroll">
+        <div class="clbl">Venta actual</div>
+        <div id="cart-list"><div class="cempty">Sin productos — tocá los tiles para agregar</div></div>
+      </div>
+      <div class="carttot" id="ctot" style="display:none">
+        <div class="ctrow"><span>Subtotal</span><span id="ct-sub">$0.00</span></div>
+        <div class="ctrow"><span>Desc.</span><span id="ct-disc" style="color:var(--accent)">—</span></div>
+        <div class="ctrow"><span>IVA 21%</span><span id="ct-tax">$0.00</span></div>
+        <div class="ctrow big"><span>TOTAL</span><span id="ct-tot" style="color:var(--yellow)">$0.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <!-- Category tabs -->
+    <div class="cat-tabs" id="cat-tabs"></div>
+
+    <!-- Product grid -->
+    <div class="prod-area">
+      <div class="prow" id="pr1"></div>
+      <div class="prow" id="pr2"></div>
+      <div class="prow" id="pr3"></div>
+    </div>
+
+    <!-- Action rows -->
+    <div class="arows">
+
+      <!-- Fila A: Empleado / Ventas recientes / Ventas pendientes / Pedidos retiro / Apartados / Cierre día / X-Report -->
+      <div class="arow">
+        <button class="tile a" onclick="openM('m-emp')">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+          <div class="tl">Empleado</div>
+        </button>
+        <button class="tile a" onclick="openRecentSales()">
+          <div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="tl">Ventas recientes</div>
+        </button>
+        <button class="tile a" onclick="openPendingSales()">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="tl">Ventas pendientes</div>
+          <div class="tbadge" id="pend-badge">2</div>
+        </button>
+        <button class="tile a" onclick="openPickup()">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M21 10H3M16 2l5 8-5 8M8 2L3 10l5 8"/></svg></div>
+          <div class="tl">Pedidos retiro</div>
+        </button>
+        <button class="tile a" onclick="openLayaways()">
+          <div class="ti"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+          <div class="tl">Apartados</div>
+        </button>
+        <button class="tile a" onclick="openCloseDay()">
+          <div class="ti"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
+          <div class="tl">Cierre del día</div>
+        </button>
+        <button class="tile a" onclick="openXReport()">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="12" x2="13" y2="12"/></svg></div>
+          <div class="tl" style="font-size:8px">X-Report</div>
+        </button>
+      </div>
+
+      <!-- Fila B: Caja / Stock y Precio / Fichaje / Gift Card / Cupones / _ / _ -->
+      <div class="arow">
+        <button class="tile a" onclick="openCashInOut()">
+          <div class="ti"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <div class="tl">Mov. de caja</div>
+        </button>
+        <button class="tile a" onclick="openStockPrice()">
+          <div class="ti"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <div class="tl">Stock y precios</div>
+        </button>
+        <button class="tile a" onclick="openClockInOut()">
+          <div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="tl">Fichaje hora</div>
+        </button>
+        <button class="tile a" onclick="openGiftCard()">
+          <div class="ti"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+          <div class="tl">Gift Card saldo</div>
+        </button>
+        <button class="tile a" onclick="openCoupons()">
+          <div class="ti"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+          <div class="tl">Cupones</div>
+        </button>
+        <button class="tile dim"></button>
+        <button class="tile dim"></button>
+      </div>
+
+      <!-- Fila C: Nueva venta / Guardar / Guardar orden / Guardar apartado / Descuento / Exento IVA / Notas -->
+      <div class="arow">
+        <button class="tile a" onclick="newSale()">
+          <div class="tfk">F4</div>
+          <div class="ti"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          <div class="tl">Nueva venta</div>
+        </button>
+        <button class="tile a" onclick="saveSale()">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div>
+          <div class="tl">Guardar venta</div>
+        </button>
+        <button class="tile a" onclick="saveAsOrder()">
+          <div class="tl">Guardar como orden</div>
+        </button>
+        <button class="tile a" onclick="openLayawayNew()">
+          <div class="tl">Guardar apartado</div>
+        </button>
+        <button class="tile a" onclick="openDiscount()">
+          <div class="ti"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="2"/><circle cx="15" cy="15" r="2"/><line x1="5" y1="19" x2="19" y2="5"/></svg></div>
+          <div class="tl" id="disc-tile-lbl">Descuento</div>
+        </button>
+        <button class="tile a" id="tax-tile" onclick="toggleTaxExempt()">
+          <div class="tl">Exento de IVA</div>
+        </button>
+        <button class="tile a" onclick="openNotes()">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="12" x2="13" y2="12"/></svg></div>
+          <div class="tl">Notas</div>
+        </button>
+      </div>
+
+      <!-- Fila D: Último ticket / Abrir caja / Promociones / Cupones / Imprimir / Envío / _ -->
+      <div class="arow">
+        <button class="tile a" onclick="printLastReceipt()">
+          <div class="ti"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+          <div class="tl">Último ticket</div>
+        </button>
+        <button class="tile a" onclick="openCashDrawer()">
+          <div class="ti"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div class="tl">Abrir cajón</div>
+        </button>
+        <button class="tile a" onclick="openPromotions()">
+          <div class="ti"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+          <div class="tl">Promociones</div>
+        </button>
+        <button class="tile a" onclick="openCoupons()">
+          <div class="ti"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+          <div class="tl">Aplicar cupón</div>
+        </button>
+        <button class="tile a" onclick="printReceipt()">
+          <div class="ti"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+          <div class="tl">Imprimir ticket</div>
+        </button>
+        <button class="tile a" onclick="openShipping()">
+          <div class="ti"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+          <div class="tl">Agregar envío</div>
+        </button>
+        <button class="tile dim"></button>
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bbar">
+      <button class="bbt bb-y" onclick="openCustomerDisplay()" title="Vista cliente">
+        <svg viewBox="0 0 24 24" stroke="#1a1200"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </button>
+      <button class="bbt bb-l" onclick="lockScreen()" title="Bloquear pantalla">
+        <svg viewBox="0 0 24 24" stroke="#fff"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </button>
+      <button class="bbt bb-r" onclick="openReturn()">DEVOLVER</button>
+      <button class="bbt bb-p" onclick="openPay()">
+        <div class="bbfk">F2</div>
+        <div class="bbpa">COBRAR &nbsp;$<span id="pay-tot">0.00</span></div>
+        <div class="bbsub" id="pay-items-count"></div>
+      </button>
     </div>
   </div>
 </div>
+
+<!-- ==============================  MODALES  ============================== -->
+
+<!-- COBRAR -->
+<div id="m-pay" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-pay')">
+  <div class="modal"><div class="mhd"><div class="mht">Seleccionar método de cobro</div><div class="mhx" onclick="closeM('m-pay')">✕</div></div>
+  <div class="mbody">
+    <div class="mamt"><div class="mamtl">Total a cobrar</div><div class="mamtv">$<span id="m-pay-amt">0.00</span></div></div>
+    <div class="pmg" id="pm-grid"></div>
+    <div id="cuotas-wrap" style="display:none" class="cuotas-wrap">
+      <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:6px">Banco y cuotas</div>
+      <div class="btabs" id="pay-bank-tabs"></div>
+      <div class="copts" id="pay-cuota-opts"></div>
+    </div>
+    <button class="conf-btn conf-g" onclick="completeSale()">✓ Confirmar cobro</button>
+  </div></div>
 </div>
 
-<!-- MODO MODAL -->
-<div id="modo-modal" style="display:none" class="modal-bg" onclick="if(event.target===this)closeM('modo-modal')">
-  <div class="modal"><div class="modo-hd"><div><div class="modo-logo-txt">modo</div><div class="modo-sub-txt">La billetera de los bancos · Argentina</div></div><div style="cursor:pointer;color:rgba(255,255,255,.7);font-size:18px" onclick="closeM('modo-modal')">✕</div></div>
-  <div class="mbody"><div class="qr-box"><svg width="130" height="130" viewBox="0 0 130 130"><rect width="130" height="130" fill="white"/><rect x="8" y="8" width="46" height="46" fill="none" stroke="#003087" stroke-width="4"/><rect x="17" y="17" width="28" height="28" fill="#003087"/><rect x="76" y="8" width="46" height="46" fill="none" stroke="#003087" stroke-width="4"/><rect x="85" y="17" width="28" height="28" fill="#003087"/><rect x="8" y="76" width="46" height="46" fill="none" stroke="#003087" stroke-width="4"/><rect x="17" y="85" width="28" height="28" fill="#003087"/><rect x="76" y="76" width="10" height="10" fill="#003087"/><rect x="92" y="76" width="10" height="10" fill="#003087"/><rect x="108" y="76" width="14" height="10" fill="#003087"/><rect x="76" y="92" width="16" height="8" fill="#003087"/><rect x="98" y="92" width="8" height="8" fill="#003087"/><rect x="112" y="92" width="10" height="8" fill="#003087"/><rect x="76" y="106" width="10" height="10" fill="#003087"/><rect x="92" y="106" width="16" height="10" fill="#003087"/><rect x="114" y="106" width="8" height="10" fill="#003087"/><rect x="36" y="66" width="8" height="8" fill="#003087"/><rect x="50" y="66" width="8" height="8" fill="#003087"/><rect x="64" y="66" width="8" height="8" fill="#003087"/></svg>
-  <div class="qr-amt" id="qr-amt">$0.00 ARS</div><div class="qr-sub">Escaneá con tu app bancaria o MODO</div><div class="qr-timer" id="qr-timer">⏱ Vence en 4:59</div></div>
-  <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-align:center;font-weight:700;letter-spacing:.5px">COMPATIBLE CON 39 BANCOS ARGENTINOS</div>
-  <div class="banks-row"><span class="mbank">Nación</span><span class="mbank">Galicia</span><span class="mbank">Santander</span><span class="mbank">BBVA</span><span class="mbank">HSBC</span><span class="mbank">Macro</span><span class="mbank">Supervielle</span><span class="mbank">Patagonia</span><span class="mbank">Brubank</span><span class="mbank">+30 más</span></div>
-  <div class="modo-info">⚡ Liquidación instantánea · Transferencias 3.0 · BCRA regulado</div>
-  <button class="modo-confirm" onclick="confirmPay('MODO QR')">✓ Confirmar pago recibido</button></div></div>
+<!-- TICKET / RECEIPT -->
+<div id="m-receipt" style="display:none" class="rov">
+  <div class="rbox">
+    <div class="rstore"><h2>ΣRPLY · Retail OS</h2><p>Córdoba, Argentina · CUIT 30-12345678-9</p><p style="font-size:8px;color:#999" id="r-date"></p></div>
+    <div class="ritems" id="r-items"></div>
+    <div class="rtots">
+      <div class="rtrow"><span>Subtotal</span><span id="r-sub"></span></div>
+      <div class="rtrow" id="r-disc-row" style="display:none"><span>Descuento</span><span id="r-disc" style="color:#00b388"></span></div>
+      <div class="rtrow"><span id="r-tax-lbl">IVA 21%</span><span id="r-tax"></span></div>
+      <div class="rtotal"><span>TOTAL</span><span id="r-total"></span></div>
+    </div>
+    <div class="rmeth" id="r-meth"></div>
+    <div id="r-cuota-lbl" style="text-align:center;font-size:9px;color:#666;margin-bottom:5px"></div>
+    <div id="r-note-lbl" style="text-align:center;font-size:9px;color:#666;font-style:italic;margin-bottom:5px"></div>
+    <div class="rfooter"><div>¡Gracias por su compra!</div><div>Ticket #<span id="r-num"></span> · ΣRPLY POS</div></div>
+    <div class="ract">
+      <button class="rbt" onclick="toast('🖨️ Imprimiendo...');closeM('m-receipt')">🖨️ Imprimir</button>
+      <button class="rbt" onclick="toast('📧 Email enviado');closeM('m-receipt')">📧 Email</button>
+      <button class="rbt p" onclick="closeM('m-receipt')">Nueva venta</button>
+    </div>
+  </div>
 </div>
 
-<!-- MP MODAL -->
-<div id="mp-modal" style="display:none" class="modal-bg" onclick="if(event.target===this)closeM('mp-modal')">
-  <div class="modal"><div class="mp-hd"><div><div style="font-size:18px;font-weight:800">Mercado Pago</div><div style="font-size:10px;opacity:.8;margin-top:1px">QR Interoperable · Argentina</div></div><div style="cursor:pointer;color:rgba(255,255,255,.7);font-size:18px" onclick="closeM('mp-modal')">✕</div></div>
-  <div class="mbody"><div class="mp-steps"><div class="mp-step"><div class="mp-step-num">1</div><div><div class="mp-step-txt">Cliente abre Mercado Pago</div><div class="mp-step-sub">App → Pagar → Escáner QR</div></div></div><div class="mp-step"><div class="mp-step-num">2</div><div><div class="mp-step-txt">Escanea el QR de tu tienda</div><div class="mp-step-sub">QR interoperable — funciona con cualquier wallet</div></div></div><div class="mp-step"><div class="mp-step-num" style="background:var(--accent)">3</div><div><div class="mp-step-txt">Elige cuotas si desea</div><div class="mp-step-sub">Hasta 12 cuotas sin interés según banco</div></div></div></div>
-  <div class="mp-qr-small"><div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">QR DE TU TIENDA</div><svg width="90" height="90" viewBox="0 0 90 90"><rect width="90" height="90" fill="white"/><rect x="5" y="5" width="32" height="32" fill="none" stroke="#009ee3" stroke-width="3"/><rect x="12" y="12" width="18" height="18" fill="#009ee3"/><rect x="53" y="5" width="32" height="32" fill="none" stroke="#009ee3" stroke-width="3"/><rect x="60" y="12" width="18" height="18" fill="#009ee3"/><rect x="5" y="53" width="32" height="32" fill="none" stroke="#009ee3" stroke-width="3"/><rect x="12" y="60" width="18" height="18" fill="#009ee3"/><rect x="53" y="53" width="8" height="8" fill="#009ee3"/><rect x="65" y="53" width="8" height="8" fill="#009ee3"/><rect x="77" y="53" width="10" height="8" fill="#009ee3"/><rect x="53" y="67" width="10" height="6" fill="#009ee3"/><rect x="68" y="67" width="8" height="6" fill="#009ee3"/><rect x="53" y="77" width="8" height="8" fill="#009ee3"/><rect x="67" y="77" width="10" height="8" fill="#009ee3"/><rect x="81" y="77" width="6" height="8" fill="#009ee3"/></svg>
-  <div style="font-size:13px;font-weight:800;color:var(--text);margin-top:6px" id="mp-amt">$0.00 ARS</div></div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:10px">💡 También compatible con MODO, Ualá, Naranja X y wallets bancarias</div>
-  <button class="mp-confirm" onclick="confirmPay('Mercado Pago QR')">✓ Confirmar pago recibido</button></div></div>
+<!-- DEVOLUCIÓN -->
+<div id="m-return" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-return')">
+  <div class="modal"><div class="mhd"><div class="mht">Procesar devolución</div><div class="mhx" onclick="closeM('m-return')">✕</div></div>
+  <div class="mbody">
+    <label class="mfl">N° de ticket original</label>
+    <input class="mfi" id="ret-ticket" placeholder="Ej: 1048"/>
+    <label class="mfl">Motivo de devolución</label>
+    <select class="mfi" id="ret-reason">
+      <option>Producto defectuoso</option><option>Talle incorrecto</option>
+      <option>No era lo esperado</option><option>Duplicado / error de carga</option>
+      <option>Cambio de opinión</option><option>Otro</option>
+    </select>
+    <label class="mfl">Método de reembolso</label>
+    <select class="mfi">
+      <option>Mismo método original</option><option>Crédito en tienda</option>
+      <option>Efectivo</option><option>Transferencia bancaria</option>
+    </select>
+    <button class="conf-btn conf-r" onclick="processReturn()">Procesar devolución</button>
+  </div></div>
 </div>
 
-<!-- GPAY MODAL -->
-<div id="gpay-modal" style="display:none" class="modal-bg" onclick="if(event.target===this)closeM('gpay-modal')">
-  <div class="modal"><div class="gpay-hd"><div><div style="font-size:18px;font-weight:800;font-style:italic">Google Pay</div><div style="font-size:10px;opacity:.8">Disponible en Argentina y toda América Latina</div></div><div style="cursor:pointer;color:rgba(255,255,255,.7);font-size:18px" onclick="closeM('gpay-modal')">✕</div></div>
-  <div class="mbody"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Países habilitados LATAM</div>
-  <div class="gpay-countries"><span class="gc">🇦🇷 Argentina</span><span class="gc">🇧🇷 Brasil</span><span class="gc">🇨🇱 Chile</span><span class="gc">🇨🇴 Colombia</span><span class="gc">🇲🇽 México</span><span class="gc">🇵🇪 Perú</span><span class="gc">🇺🇾 Uruguay</span></div>
-  <div class="gpay-card-row"><div style="font-size:20px">💳</div><div><div style="font-size:12px;font-weight:600">Visa •••• 4891</div><div style="font-size:10px;color:var(--muted)">Google Pay · Token NFC/QR seguro</div></div><div style="margin-left:auto;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer">Cambiar</div></div>
-  <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:12px"><span>Total a cobrar</span><span id="gp-amt">$0.00</span></div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:10px">🔒 Tokenizado · PCI DSS · Visa, Mastercard, Amex</div>
-  <button class="gpay-btn" onclick="confirmPay('Google Pay')"><span style="font-style:italic;font-weight:800;color:#4285f4">G</span><span style="color:#34a853">o</span><span style="color:#fbbc05">o</span><span style="color:#ea4335">g</span><span style="color:#4285f4">l</span><span style="color:#34a853">e</span>&nbsp;Pay — Cobrar</button></div></div>
+<!-- VENTAS RECIENTES -->
+<div id="m-recent" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-recent')">
+  <div class="modal wide"><div class="mhd"><div class="mht">Ventas recientes</div><div class="mhx" onclick="closeM('m-recent')">✕</div></div>
+  <div class="mbody" id="recent-body"></div></div>
 </div>
 
-<!-- CUOTAS MODAL -->
-<div id="cuotas-modal" style="display:none" class="modal-bg" onclick="if(event.target===this)closeM('cuotas-modal')">
-  <div class="modal"><div class="cuotas-hd"><div><div style="font-size:16px;font-weight:700">💳 Pago en Cuotas</div><div style="font-size:10px;opacity:.8;margin-top:2px">Total: <span id="cuotas-total-modal">$0.00</span></div></div><div style="cursor:pointer;color:rgba(255,255,255,.7);font-size:18px" onclick="closeM('cuotas-modal')">✕</div></div>
-  <div class="mbody"><div class="cuotas-bank-tabs" id="bank-tabs"></div><div class="cuotas-list" id="cuotas-list"></div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:10px">Las cuotas sin interés están sujetas a promociones bancarias vigentes</div>
-  <button class="cuota-confirm" onclick="confirmCuota()">Confirmar pago en cuotas</button></div></div>
+<!-- VENTAS PENDIENTES -->
+<div id="m-pending" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-pending')">
+  <div class="modal"><div class="mhd"><div class="mht" id="pend-title">Ventas pendientes guardadas</div><div class="mhx" onclick="closeM('m-pending')">✕</div></div>
+  <div class="mbody" id="pending-body"></div></div>
 </div>
 
-<!-- RECEIPT MODAL -->
-<div id="receipt-modal" style="display:none" class="modal-bg">
-  <div class="modal"><div class="receipt-hd"><div style="font-size:15px;font-weight:700">✓ Venta completada</div><div style="cursor:pointer;color:rgba(255,255,255,.8);font-size:18px" onclick="closeM('receipt-modal')">✕</div></div>
-  <div class="receipt-body"><div class="receipt-store"><h2>RetailOS AR</h2><p>Córdoba, Argentina · CUIT 30-12345678-9</p><p id="r-date" style="margin-top:2px;font-size:10px;color:var(--muted)"></p></div>
-  <div class="receipt-items" id="r-items"></div>
-  <div class="receipt-totals"><div class="rt"><span>Subtotal</span><span id="r-sub"></span></div><div class="rt"><span>Descuento</span><span id="r-disc"></span></div><div class="rt"><span>IVA 21%</span><span id="r-tax"></span></div><div class="rt big"><span>TOTAL</span><span id="r-total"></span></div></div>
-  <div class="receipt-pay"><span class="receipt-pay-badge" id="r-method" style="background:#e6faf5;color:#065f46"></span></div>
-  <div id="r-cuotas" style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:10px"></div>
-  <div class="receipt-footer"><div>Gracias por su compra 🙏</div><div>Ticket N° #<span id="r-num"></span> · RetailOS v1.0</div><div style="margin-top:4px;font-size:9px">IVA incluido en el precio final</div></div></div>
-  <div style="padding:0 16px 16px;display:flex;gap:8px"><button class="ra-btn" onclick="toast('🖨️ Imprimiendo...');closeM('receipt-modal')">🖨️ Imprimir</button><button class="ra-btn" onclick="toast('📧 Email enviado');closeM('receipt-modal')">📧 Email</button><button class="ra-btn primary" onclick="closeM('receipt-modal')">Nueva venta</button></div></div>
+<!-- PEDIDOS RETIRO -->
+<div id="m-pickup" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-pickup')">
+  <div class="modal"><div class="mhd"><div class="mht">Pedidos para retirar en tienda</div><div class="mhx" onclick="closeM('m-pickup')">✕</div></div>
+  <div class="mbody" id="pickup-body"></div></div>
 </div>
 
-<div class="toast" id="toast-el"></div>
+<!-- APARTADO (LAYAWAY) -->
+<div id="m-layaway" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-layaway')">
+  <div class="modal"><div class="mhd"><div class="mht">Nuevo apartado con seña</div><div class="mhx" onclick="closeM('m-layaway')">✕</div></div>
+  <div class="mbody">
+    <div class="mamt" style="margin-bottom:9px"><div class="mamtl">Total del carrito</div><div class="mamtv">$<span id="lay-tot">0.00</span></div></div>
+    <div class="frow">
+      <div class="fg"><label class="mfl">Seña mínima (%)</label><input class="mfi" id="lay-pct" type="number" value="30" min="10" max="100" style="margin:0" oninput="calcLay()"/></div>
+      <div class="fg"><label class="mfl">Monto seña</label><input class="mfi" id="lay-amt" readonly style="margin:0"/></div>
+    </div>
+    <div class="frow" style="margin-top:6px">
+      <div class="fg"><label class="mfl">Vencimiento</label><input class="mfi" id="lay-exp" type="date" style="margin:0"/></div>
+      <div class="fg"><label class="mfl">Frecuencia de pagos</label><select class="mfi" style="margin:0"><option>Semanal</option><option>Quincenal</option><option>Mensual</option></select></div>
+    </div>
+    <label class="mfl" style="margin-top:7px">Nota</label>
+    <textarea class="nota-area" placeholder="Instrucciones especiales..." rows="2"></textarea>
+    <button class="conf-btn conf-b" onclick="confirmLayaway()">Confirmar seña y apartar</button>
+  </div></div>
+</div>
+
+<!-- DESCUENTO -->
+<div id="m-discount" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-discount')">
+  <div class="modal"><div class="mhd"><div class="mht">Aplicar descuento a la venta</div><div class="mhx" onclick="closeM('m-discount')">✕</div></div>
+  <div class="mbody">
+    <div class="disc-grid" id="disc-grid"></div>
+    <label class="mfl">% personalizado</label>
+    <input class="mfi" id="disc-custom" type="number" min="0" max="100" placeholder="Ej: 15" oninput="previewDisc(this.value)"/>
+    <div class="info-box">
+      <div class="ib-row"><span class="ib-lbl">Ahorro del cliente</span><span class="ib-val" id="disc-preview">$0.00</span></div>
+      <div class="ib-row"><span class="ib-lbl">Total con descuento</span><span id="disc-after" style="font-weight:700">$0.00</span></div>
+    </div>
+    <label class="mfl">PIN de autorización (requerido para &gt;20%)</label>
+    <input class="mfi" type="password" id="disc-pin" placeholder="PIN de gerente"/>
+    <button class="conf-btn conf-g" onclick="applyDiscount()">Aplicar descuento</button>
+  </div></div>
+</div>
+
+<!-- NOTAS -->
+<div id="m-notes" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-notes')">
+  <div class="modal"><div class="mhd"><div class="mht">Notas de la venta</div><div class="mhx" onclick="closeM('m-notes')">✕</div></div>
+  <div class="mbody">
+    <label class="mfl">Nota interna (no aparece en ticket)</label>
+    <textarea class="nota-area" id="note-int" placeholder="Solo visible para el equipo..." rows="3"></textarea>
+    <label class="mfl">Mensaje para el cliente (aparece en ticket)</label>
+    <textarea class="nota-area" id="note-tick" placeholder="Ej: ¡Feliz cumpleaños! ..." rows="3"></textarea>
+    <button class="conf-btn conf-b" onclick="saveNote()">Guardar notas</button>
+  </div></div>
+</div>
+
+<!-- MOVIMIENTO DE CAJA -->
+<div id="m-cash" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-cash')">
+  <div class="modal"><div class="mhd"><div class="mht">Movimiento de caja</div><div class="mhx" onclick="closeM('m-cash')">✕</div></div>
+  <div class="mbody">
+    <div class="cash-tabs">
+      <button class="ctab2 on" id="c-in-tab" onclick="setCashDir('in')">Ingreso (+)</button>
+      <button class="ctab2" id="c-out-tab" onclick="setCashDir('out')">Egreso (–)</button>
+    </div>
+    <label class="mfl">Monto (ARS)</label>
+    <input class="mfi" id="cash-amt" type="number" placeholder="0.00" oninput="updateCashPreview()"/>
+    <label class="mfl">Motivo</label>
+    <select class="mfi" id="cash-reason">
+      <option>Apertura de caja</option><option>Fondo de cambio</option>
+      <option>Retiro para depósito</option><option>Pago a proveedor</option>
+      <option>Gasto operativo</option><option>Otro</option>
+    </select>
+    <label class="mfl">Descripción adicional</label>
+    <input class="mfi" id="cash-desc" placeholder="Detalle del movimiento"/>
+    <div class="bal-row">
+      <div class="ib-row"><span class="ib-lbl">Saldo actual en caja</span><span class="ib-val" id="cash-cur">$2,450.00</span></div>
+      <div class="ib-row"><span class="ib-lbl">Saldo luego del movimiento</span><span id="cash-after" style="font-weight:700;color:#00b388">$2,450.00</span></div>
+    </div>
+    <button class="conf-btn conf-g" onclick="confirmCash()">Registrar movimiento</button>
+  </div></div>
+</div>
+
+<!-- STOCK Y PRECIOS -->
+<div id="m-stock" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-stock')">
+  <div class="modal wide"><div class="mhd"><div class="mht">Consulta de stock y precios</div><div class="mhx" onclick="closeM('m-stock')">✕</div></div>
+  <div class="mbody">
+    <input class="mfi" id="stock-q" placeholder="Buscar por nombre o SKU..." oninput="renderStockList(this.value)"/>
+    <div id="stock-body"></div>
+  </div></div>
+</div>
+
+<!-- FICHAJE -->
+<div id="m-clock" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-clock')">
+  <div class="modal"><div class="mhd"><div class="mht">Fichaje de entrada/salida</div><div class="mhx" onclick="closeM('m-clock')">✕</div></div>
+  <div class="mbody">
+    <div class="clock-disp">
+      <div class="clock-time" id="clock-t">--:--:--</div>
+      <div class="clock-date" id="clock-d"></div>
+    </div>
+    <label class="mfl">Empleado</label>
+    <select class="mfi" id="clock-emp">
+      <option>Support ERPLY</option><option>Ana Pérez</option>
+      <option>Luis García</option><option>Marta López</option>
+    </select>
+    <label class="mfl">PIN de empleado</label>
+    <input class="mfi" type="password" placeholder="Ingresá tu PIN" id="clock-pin"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px">
+      <button class="conf-btn conf-g" style="margin:0" onclick="confirmClock('in')">Entrada ↓</button>
+      <button class="conf-btn conf-r" style="margin:0" onclick="confirmClock('out')">Salida ↑</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- GIFT CARD -->
+<div id="m-gc" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-gc')">
+  <div class="modal"><div class="mhd"><div class="mht">Consultar saldo de Gift Card</div><div class="mhx" onclick="closeM('m-gc')">✕</div></div>
+  <div class="mbody">
+    <label class="mfl">Código de Gift Card</label>
+    <input class="mfi" id="gc-inp" placeholder="Ej: GC2024A" oninput="lookupGC(this.value)"/>
+    <div id="gc-result" style="display:none">
+      <div class="gc-disp">
+        <div class="gc-code-lbl" id="gc-code-show"></div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:4px">Saldo disponible</div>
+        <div class="gc-bal" id="gc-bal-show">$0.00</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:4px" id="gc-exp-show"></div>
+      </div>
+      <button class="conf-btn conf-b" onclick="applyGC()">Aplicar a esta venta</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- PROMOCIONES -->
+<div id="m-promos" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-promos')">
+  <div class="modal wide"><div class="mhd"><div class="mht">Promociones activas</div><div class="mhx" onclick="closeM('m-promos')">✕</div></div>
+  <div class="mbody" id="promos-body"></div></div>
+</div>
+
+<!-- CUPONES -->
+<div id="m-coupons" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-coupons')">
+  <div class="modal"><div class="mhd"><div class="mht">Cupones de descuento</div><div class="mhx" onclick="closeM('m-coupons')">✕</div></div>
+  <div class="mbody">
+    <div style="display:flex;gap:5px;margin-bottom:10px">
+      <input class="mfi" id="coup-inp" placeholder="Ingresar código de cupón" style="margin:0;flex:1"/>
+      <button class="conf-btn conf-b" style="margin:0;width:auto;padding:7px 12px" onclick="applyCouponCode()">Aplicar</button>
+    </div>
+    <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:7px">Cupones disponibles</div>
+    <div id="coupons-body"></div>
+  </div></div>
+</div>
+
+<!-- ENVÍO -->
+<div id="m-shipping" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-shipping')">
+  <div class="modal"><div class="mhd"><div class="mht">Agregar envío a domicilio</div><div class="mhx" onclick="closeM('m-shipping')">✕</div></div>
+  <div class="mbody">
+    <label class="mfl">Dirección de entrega</label>
+    <input class="mfi" placeholder="Calle y número"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <input class="mfi" placeholder="Ciudad" style="margin:0"/><input class="mfi" placeholder="Código postal" style="margin:0"/>
+    </div>
+    <label class="mfl" style="margin-top:7px">Método de envío</label>
+    <div id="ship-body" style="margin-bottom:4px"></div>
+    <button class="conf-btn conf-b" onclick="confirmShip()">Confirmar envío</button>
+  </div></div>
+</div>
+
+<!-- X-REPORT -->
+<div id="m-xreport" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-xreport')">
+  <div class="modal"><div class="mhd"><div class="mht">X-Report — Estado de caja actual</div><div class="mhx" onclick="closeM('m-xreport')">✕</div></div>
+  <div class="mbody" id="xr-body"></div></div>
+</div>
+
+<!-- CIERRE DEL DÍA -->
+<div id="m-closeday" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-closeday')">
+  <div class="modal"><div class="mhd"><div class="mht">Cierre del día — Z-Report</div><div class="mhx" onclick="closeM('m-closeday')">✕</div></div>
+  <div class="mbody">
+    <div id="cd-body"></div>
+    <button class="conf-btn conf-r" onclick="confirmClose()">Confirmar cierre del día</button>
+  </div></div>
+</div>
+
+<!-- EMPLEADOS -->
+<div id="m-emp" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-emp')">
+  <div class="modal"><div class="mhd"><div class="mht">Asignar empleado a esta venta</div><div class="mhx" onclick="closeM('m-emp')">✕</div></div>
+  <div class="mbody" id="emp-body"></div></div>
+</div>
+
+<!-- FACTURA / COMPRAS -->
+<div id="m-invoice" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-invoice')">
+  <div class="modal wide"><div class="mhd"><div class="mht" id="inv-title">Factura del cliente</div><div class="mhx" onclick="closeM('m-invoice')">✕</div></div>
+  <div class="mbody" id="inv-body"></div></div>
+</div>
+
+<!-- VISTA CLIENTE -->
+<div id="m-display" style="display:none" class="overlay" onclick="if(event.target===this)closeM('m-display')">
+  <div class="modal"><div class="mhd"><div class="mht">Vista cliente (pantalla secundaria)</div><div class="mhx" onclick="closeM('m-display')">✕</div></div>
+  <div class="mbody">
+    <div style="background:#0a1628;border-radius:8px;padding:18px;text-align:center">
+      <div style="font-size:10px;color:#3a5a7a;margin-bottom:7px">ΣRPLY · Retail OS · Córdoba</div>
+      <div style="font-size:11px;color:#5a7a99;margin-bottom:5px" id="disp-cust">Cliente: por defecto</div>
+      <div style="font-size:9px;color:#3a5a7a;margin-bottom:10px;line-height:1.5" id="disp-items"></div>
+      <div style="font-size:30px;font-weight:800;color:var(--yellow)" id="disp-total">$0.00</div>
+      <div style="font-size:9px;color:#3a5a7a;margin-top:5px">Total a pagar · IVA incluido</div>
+    </div>
+  </div></div>
+</div>
+
+<div class="toast" id="te"></div>
 
 <script>
-const PR=[{n:'Nike Air Max',p:120,e:'👟',c:'Calzado',s:72},{n:"Levi's 501",p:75,e:'👖',c:'Ropa',s:3},{n:'Mochila Urbana',p:60,e:'🎒',c:'Bolsos',s:22},{n:'Reloj Casio',p:80,e:'⌚',c:'Accesorios',s:44},{n:'Kit Skincare',p:45,e:'🧴',c:'Belleza',s:30},{n:'Adidas Slides',p:35,e:'🩴',c:'Calzado',s:58},{n:'Campera Denim',p:95,e:'🧥',c:'Ropa',s:11},{n:'Lentes de Sol',p:55,e:'🕶️',c:'Accesorios',s:0},{n:'Tote Bag',p:30,e:'👜',c:'Bolsos',s:67},{n:'Set Labial',p:18,e:'💋',c:'Belleza',s:90},{n:'Zapatillas Run',p:110,e:'👟',c:'Calzado',s:15},{n:'Polo Shirt',p:42,e:'👕',c:'Ropa',s:34},{n:'Billetera',p:28,e:'👛',c:'Accesorios',s:50},{n:'Perfume 50ml',p:65,e:'🌸',c:'Belleza',s:25},{n:'Yoga Mat',p:38,e:'🧘',c:'Deportes',s:18},{n:'Cinturón',p:32,e:'🎗️',c:'Accesorios',s:40}];
-const CR=[{n:'Maria Garcia',e:'maria@email.com',o:24,s:1840,t:'Gold'},{n:'James Wilson',e:'james@email.com',o:12,s:920,t:'Silver'},{n:'Priya Patel',e:'priya@email.com',o:31,s:2610,t:'Platinum'},{n:'Tom Chen',e:'tom@email.com',o:8,s:540,t:'Bronze'},{n:'Sara Lee',e:'sara@email.com',o:17,s:1230,t:'Silver'},{n:'Carlos Díaz',e:'carlos@email.com',o:5,s:290,t:'Bronze'},{n:'Emma Brown',e:'emma@email.com',o:42,s:3580,t:'Platinum'},{n:'Liam Smith',e:'liam@email.com',o:9,s:670,t:'Bronze'}];
-const SKUS=['NK-AM-001','LV-501-BLK','UB-BAG-002','CS-WCH-01','SK-KIT-005','AD-SL-003','DN-JK-007','SG-ACC-012','TB-BAG-003','LB-BT-009','RN-SH-011','PL-SH-012','CW-ACC-013','PF-BT-015','YG-MT-014','BT-AC-016'];
-const BANKS={'Galicia':[{n:3,free:true},{n:6,free:true},{n:12,free:true},{n:18,rate:0.06},{n:24,rate:0.08}],'Santander':[{n:3,free:true},{n:6,free:true},{n:9,rate:0.04},{n:12,rate:0.06},{n:18,rate:0.09}],'BBVA':[{n:3,free:true},{n:6,free:true},{n:12,free:true},{n:24,rate:0.07}],'Naranja X':[{n:3,free:true},{n:6,free:true},{n:12,rate:0.05},{n:18,rate:0.08},{n:24,rate:0.1}],'HSBC':[{n:3,free:true},{n:6,rate:0.03},{n:12,rate:0.06},{n:18,rate:0.09}]};
-let cart={},disc=0,sbOpen=false,timerInt=null,selCuota=null,selBank='Galicia',lastMethod='',lastCuota='',lastCart={};
-function toast(m){const e=document.getElementById('toast-el');e.textContent=m;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2400)}
-function toggleSb(){sbOpen=!sbOpen;document.getElementById('sb').classList.toggle('open',sbOpen)}
-function go(p,el){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById('pg-'+p).classList.add('on');const T={dashboard:'Dashboard',pos:'Point of Sale',inventory:'Inventario',customers:'Clientes',payments:'Pagos & Estadísticas',cuotas:'Cuotas & Promociones'};document.getElementById('tb-t').textContent=T[p]||p;if(p==='pos')initPOS();if(p==='inventory')rInv(PR);if(p==='customers')rCust();if(p==='payments')rPayStats();if(p==='cuotas')rCuotasPage();}
-(()=>{const v=[68,82,91,75,88,95,72],mx=Math.max(...v);document.getElementById('wb').innerHTML=v.map((x,i)=>`<div class="bwb${i===6?' hi':''}" style="height:${Math.round(x/mx*68)}px;flex:1"></div>`).join('')})();
-function getTotal(){const keys=Object.keys(cart);const sub=keys.reduce((s,k)=>s+cart[k].p*cart[k].q,0);const d=sub*(disc/100);return sub-d+(sub-d)*0.21;}
-function initPOS(){const cats=['Todos',...new Set(PR.map(p=>p.c))];document.getElementById('pcbar').innerHTML=cats.map(c=>`<span class="pc${c==='Todos'?' on':''}" onclick="pFilter('${c}',this)">${c}</span>`).join('');rGrid(PR);}
-function pFilter(c,el){document.querySelectorAll('.pc').forEach(b=>b.classList.remove('on'));el.classList.add('on');rGrid(c==='Todos'?PR:PR.filter(p=>p.c===c));}
-function sProds(q){rGrid(PR.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())));}
-function rGrid(ps){document.getElementById('pg-grid').innerHTML=ps.map(p=>`<div class="pcd${p.s===0?' oos':''}" onclick="addC(${PR.indexOf(p)})"><div class="pe">${p.e}</div><div class="pn">${p.n}</div><div class="pp">$${p.p}</div><div class="pst">${p.s>0?p.s+' unid.':'Sin stock'}</div></div>`).join('');}
-function addC(i){const p=PR[i];if(p.s===0){toast('⚠ Sin stock');return;}cart[i]=cart[i]?{...cart[i],q:cart[i].q+1}:{...p,q:1};rCart();toast(`${p.e} ${p.n} agregado`);}
-function chQ(i,d){if(!cart[i])return;cart[i].q+=d;if(cart[i].q<=0)delete cart[i];rCart();}
-function clrCart(){cart={};disc=0;selCuota=null;const ck=document.getElementById('cuotas-chk');if(ck)ck.checked=false;const cm=document.getElementById('cuotas-mini');if(cm)cm.style.display='none';rCart();}
-function applyDc(){const v=parseFloat(document.getElementById('dc-in').value);if(!isNaN(v)&&v>0&&v<=100){disc=v;rCart();toast(`Descuento ${v}% aplicado`);}else toast('Ingresá un % válido');}
-function toggleCuotas(on){document.getElementById('cuotas-mini').style.display=on?'block':'none';if(on)rMiniCuotas();}
-function rMiniCuotas(){const tot=getTotal();document.getElementById('cm-total').textContent='$'+tot.toFixed(2);const plans=BANKS[selBank];document.getElementById('cm-grid').innerHTML=plans.map(pl=>{const amt=pl.free?tot/pl.n:tot*(1+(pl.rate||0)*pl.n)/pl.n;return `<div class="cuota-opt${selCuota===pl.n?' sel':''}" onclick="selMiniCuota(${pl.n})"><div class="cuota-n">${pl.n}x</div><div class="cuota-amt">$${amt.toFixed(0)}/mes</div><div class="cuota-int">${pl.free?'Sin int.':'c/int.'}</div></div>`;}).join('');}
-function selMiniCuota(n){selCuota=n;rMiniCuotas();}
-function rCart(){const keys=Object.keys(cart),body=document.getElementById('cart-b'),foot=document.getElementById('cart-f');if(!keys.length){body.innerHTML='<div class="cempty"><div class="ceico">🛒</div><div class="cetxt">Seleccione productos para comenzar</div></div>';foot.style.display='none';return;}body.innerHTML=keys.map(k=>{const i=cart[k];return `<div class="ci"><div class="cie">${i.e}</div><div class="cii"><div class="cin">${i.n}</div><div class="ciu">$${i.p} c/u</div></div><div class="cqc"><button class="qb" onclick="chQ(${k},-1)">−</button><span class="cq">${i.q}</span><button class="qb" onclick="chQ(${k},1)">+</button></div><div class="ctot">$${(i.p*i.q).toFixed(2)}</div><div class="cdel" onclick="delete cart[${k}];rCart()">✕</div></div>`;}).join('');const sub=keys.reduce((s,k)=>s+cart[k].p*cart[k].q,0);const d=sub*(disc/100),tax=(sub-d)*0.21,tot=sub-d+tax;document.getElementById('cf-s').textContent='$'+sub.toFixed(2);document.getElementById('cf-d').textContent=disc>0?`-$${d.toFixed(2)} (${disc}%)`:'—';document.getElementById('cf-t').textContent='$'+tax.toFixed(2);document.getElementById('cf-tot').textContent='$'+tot.toFixed(2);document.getElementById('c-amt').textContent=tot.toFixed(2);document.getElementById('qr-amt').textContent='$'+tot.toFixed(2)+' ARS';document.getElementById('mp-amt').textContent='$'+tot.toFixed(2)+' ARS';document.getElementById('gp-amt').textContent='$'+tot.toFixed(2)+' ARS';document.getElementById('cuotas-total-modal').textContent='$'+tot.toFixed(2);foot.style.display='block';if(document.getElementById('cuotas-chk')&&document.getElementById('cuotas-chk').checked)rMiniCuotas();}
-function checkout(m){if(!Object.keys(cart).length)return;lastMethod=m;lastCuota='';lastCart={...cart};showReceipt();}
-function openModo(){if(!Object.keys(cart).length){toast('Agregá productos primero');return;}document.getElementById('modo-modal').style.display='flex';startTimer();}
-function openMP(){if(!Object.keys(cart).length){toast('Agregá productos primero');return;}document.getElementById('mp-modal').style.display='flex';}
-function openGpay(){if(!Object.keys(cart).length){toast('Agregá productos primero');return;}document.getElementById('gpay-modal').style.display='flex';}
-function openCuotas(){if(!Object.keys(cart).length){toast('Agregá productos primero');return;}rCuotasModal();document.getElementById('cuotas-modal').style.display='flex';}
-function closeM(id){document.getElementById(id).style.display='none';if(id==='modo-modal'&&timerInt)clearInterval(timerInt);}
-function confirmPay(m){closeM('modo-modal');closeM('mp-modal');closeM('gpay-modal');lastMethod=m;lastCuota='';lastCart={...cart};showReceipt();}
-function rCuotasModal(){const tot=getTotal();document.getElementById('cuotas-total-modal').textContent='$'+tot.toFixed(2);const tabs=Object.keys(BANKS);document.getElementById('bank-tabs').innerHTML=tabs.map(b=>`<span class="cbt${b===selBank?' on':''}" onclick="selBankTab('${b}',this)">${b}</span>`).join('');rCuotasList(tot);}
-function selBankTab(b,el){selBank=b;selCuota=null;document.querySelectorAll('.cbt').forEach(x=>x.classList.remove('on'));el.classList.add('on');rCuotasList(getTotal());}
-function rCuotasList(tot){const plans=BANKS[selBank];document.getElementById('cuotas-list').innerHTML=plans.map(pl=>{const rate=pl.rate||0;const monthly=(pl.free?tot/pl.n:tot*(1+rate*pl.n)/pl.n);const totalPay=pl.free?tot:tot*(1+rate*pl.n);const tag=pl.free?`<span class="cr-tag tag-free">Sin interés</span>`:`<span class="cr-tag tag-int">${(rate*100).toFixed(0)}% TNA</span>`;return `<div class="cuota-row${selCuota===pl.n?' sel':''}" onclick="pickCuota(${pl.n})"><div class="cr-left"><div class="cr-n">${pl.n} cuotas</div><div class="cr-lbl">${tag}</div></div><div class="cr-right"><div class="cr-amt">$${monthly.toFixed(0)}/mes</div><div class="cr-int">Total: $${totalPay.toFixed(0)}</div></div></div>`;}).join('');}
-function pickCuota(n){selCuota=n;rCuotasList(getTotal());}
-function confirmCuota(){if(!selCuota){toast('Seleccioná una cantidad de cuotas');return;}const plan=BANKS[selBank].find(p=>p.n===selCuota);const cuotaStr=`${selCuota} cuotas ${plan.free?'sin interés':'con interés'} · ${selBank}`;closeM('cuotas-modal');lastMethod='Tarjeta en cuotas';lastCuota=cuotaStr;lastCart={...cart};showReceipt();}
-function showReceipt(){const now=new Date();document.getElementById('r-date').textContent=now.toLocaleString('es-AR');document.getElementById('r-num').textContent=Math.floor(1000+Math.random()*9000);const keys=Object.keys(lastCart);const sub=keys.reduce((s,k)=>s+lastCart[k].p*lastCart[k].q,0);const d=sub*(disc/100),tax=(sub-d)*0.21,tot=sub-d+tax;document.getElementById('r-items').innerHTML=keys.map(k=>`<div class="ri"><span>${lastCart[k].e} ${lastCart[k].n} ×${lastCart[k].q}</span><span>$${(lastCart[k].p*lastCart[k].q).toFixed(2)}</span></div>`).join('');document.getElementById('r-sub').textContent='$'+sub.toFixed(2);document.getElementById('r-disc').textContent=disc>0?`-$${d.toFixed(2)}`:'—';document.getElementById('r-tax').textContent='$'+tax.toFixed(2);document.getElementById('r-total').textContent='$'+tot.toFixed(2);document.getElementById('r-method').textContent='✓ '+lastMethod;document.getElementById('r-cuotas').textContent=lastCuota?'📋 '+lastCuota:'';document.getElementById('receipt-modal').style.display='flex';cart={};disc=0;selCuota=null;clrCart();}
-function startTimer(){let sec=299;if(timerInt)clearInterval(timerInt);function upd(){const m=Math.floor(sec/60),s=sec%60;document.getElementById('qr-timer').textContent=`⏱ Vence en ${m}:${s<10?'0'+s:s}`;if(sec<=0){clearInterval(timerInt);document.getElementById('qr-timer').textContent='⚠ QR vencido — generá uno nuevo';}sec--;}upd();timerInt=setInterval(upd,1000);}
-function rInv(p){document.getElementById('inv-b').innerHTML=p.map((x)=>{const pct=Math.min(100,Math.round(x.s/100*100));const sc=x.s===0?'#e8373d':x.s<10?'#e8373d':x.s<25?'#f59e0b':'#00b388';const cl=x.s===0?'bkr':x.s<10?'bkr':x.s<25?'bka':'bkg';const lb=x.s===0?'Sin stock':x.s<10?'Stock bajo':x.s<25?'Medio':'En stock';return `<tr><td><div class="pnc"><div class="pth">${x.e}</div><div><div class="pnn">${x.n}</div><div class="psk">${SKUS[PR.indexOf(x)]||'—'}</div></div></div></td><td><span class="bk bkb" style="font-size:9px">${x.c}</span></td><td>$${x.p}</td><td><div class="stb"><div class="stt"><div class="stf" style="width:${pct}%;background:${sc}"></div></div>${x.s}</div></td><td><span class="bk ${cl}">${lb}</span></td><td></td><td><span class="el" onclick="toast('Editar: ${x.n}')">Editar</span></td></tr>`;}).join('');}
-function fInv(q){rInv(PR.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())));}
-function fInvC(c){rInv(c?PR.filter(p=>p.c===c):PR);}
-function rCust(){const tc={Bronze:'#cd7f32',Silver:'#94a3b8',Gold:'#f59e0b',Platinum:'#a855f7'};document.getElementById('cg').innerHTML=CR.map(c=>{const ini=c.n.split(' ').map(w=>w[0]).join('');return `<div class="cc" onclick="toast('Perfil: ${c.n}')"><div class="cca">${ini}</div><div class="ccn">${c.n}</div><div class="cce">${c.e}</div><span class="bk" style="background:${tc[c.t]}22;color:${tc[c.t]};font-size:9px;padding:2px 6px;border-radius:6px;font-weight:700">${c.t}</span><div class="ccr"><div><div class="ccv">${c.o}</div><div class="ccl">Órdenes</div></div><div><div class="ccv">$${c.s.toLocaleString()}</div><div class="ccl">Gastado</div></div></div></div>`;}).join('');}
-function rPayStats(){const pd=[{n:'MODO QR',e:'🏦',v:14200,c:'#003087'},{n:'Mercado Pago QR',e:'🔵',v:9800,c:'#009ee3'},{n:'Google Pay',e:'📱',v:8640,c:'#4285f4'},{n:'Tarjeta en cuotas',e:'💳',v:7200,c:'#1e40af'},{n:'Ualá',e:'💜',v:4100,c:'#7b2d8b'},{n:'Transferencia 3.0',e:'⚡',v:2980,c:'#00a651'},{n:'Naranja X',e:'🟠',v:1920,c:'#ff6900'},{n:'Efectivo',e:'💵',v:1480,c:'#16a34a'},{n:'Rapipago',e:'🧾',v:620,c:'#9f1239'}];const tot=pd.reduce((s,x)=>s+x.v,0);document.getElementById('pst-list').innerHTML=pd.map(d=>`<div class="ps-row"><div class="ps-ico" style="background:${d.c}22">${d.e}</div><div class="ps-name">${d.n}</div><div class="ps-bar-t"><div class="ps-bar-f" style="width:${Math.round(d.v/tot*100)}%;background:${d.c}"></div></div><div class="ps-pct" style="color:${d.c}"> ${Math.round(d.v/tot*100)}% · $${d.v.toLocaleString()}</div></div>`).join('');}
-function rCuotasPage(){const promos=[{bank:'Galicia',plans:'3, 6 y 12 cuotas sin interés',cats:'Indumentaria y calzado',valid:'hasta 30/04'},{bank:'Santander',plans:'3 y 6 cuotas sin interés',cats:'Todas las categorías',valid:'hasta 15/05'},{bank:'BBVA',plans:'3, 6 y 12 cuotas sin interés',cats:'Electrónica y ropa',valid:'hasta 01/05'},{bank:'Naranja X',plans:'3 y 6 cuotas sin interés',cats:'Moda y belleza',valid:'hasta 20/04'},{bank:'HSBC',plans:'3 cuotas sin interés',cats:'Todas las categorías',valid:'hasta 30/04'}];document.getElementById('promo-list').innerHTML=promos.map(p=>`<div style="padding:10px;background:#f7f9fc;border:1px solid var(--border);border-radius:8px;border-left:3px solid var(--accent)"><div style="font-size:12px;font-weight:700">${p.bank} · ${p.plans}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${p.cats} · Válido ${p.valid}</div></div>`).join('');const dist=[{n:'1 cuota',pct:32},{n:'3 cuotas',pct:28},{n:'6 cuotas',pct:22},{n:'12 cuotas',pct:12},{n:'18+ cuotas',pct:6}];document.getElementById('cuotas-dist').innerHTML=dist.map(d=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>${d.n}</span><span style="font-weight:600">${d.pct}%</span></div><div style="height:6px;background:#e2e6ea;border-radius:3px;overflow:hidden"><div style="width:${d.pct}%;height:100%;background:var(--accent);border-radius:3px"></div></div></div>`).join('');}
+/* ─────── DATA ─────── */
+const PR=[
+  {n:'Nike Air Max',p:120,e:'👟',c:'Calzado',s:72,sku:'NK-AM-001'},
+  {n:"Levi's 501",p:75,e:'👖',c:'Ropa',s:3,sku:'LV-501-BLK'},
+  {n:'Mochila Urbana',p:60,e:'🎒',c:'Bolsos',s:22,sku:'UB-BAG-002'},
+  {n:'Reloj Casio',p:80,e:'⌚',c:'Accesorios',s:44,sku:'CS-WCH-01'},
+  {n:'Kit Skincare',p:45,e:'🧴',c:'Belleza',s:30,sku:'SK-KIT-005'},
+  {n:'Adidas Slides',p:35,e:'🩴',c:'Calzado',s:58,sku:'AD-SL-003'},
+  {n:'Campera Denim',p:95,e:'🧥',c:'Ropa',s:11,sku:'DN-JK-007'},
+  {n:'Lentes Sol',p:55,e:'🕶️',c:'Accesorios',s:0,sku:'SG-ACC-012'},
+  {n:'Tote Bag',p:30,e:'👜',c:'Bolsos',s:67,sku:'TB-BAG-003'},
+  {n:'Set Labial',p:18,e:'💋',c:'Belleza',s:90,sku:'LB-BT-009'},
+  {n:'Zapatillas Run',p:110,e:'👟',c:'Calzado',s:15,sku:'RN-SH-011'},
+  {n:'Polo Shirt',p:42,e:'👕',c:'Ropa',s:34,sku:'PL-SH-012'},
+  {n:'Billetera',p:28,e:'👛',c:'Accesorios',s:50,sku:'CW-ACC-013'},
+  {n:'Perfume 50ml',p:65,e:'🌸',c:'Belleza',s:25,sku:'PF-BT-015'},
+  {n:'Yoga Mat',p:38,e:'🧘',c:'Deportes',s:18,sku:'YG-MT-014'},
+  {n:'Cinturón',p:32,e:'🎗️',c:'Accesorios',s:40,sku:'BT-AC-016'},
+  {n:'Buzo Hoodie',p:78,e:'🧶',c:'Ropa',s:20,sku:'BZ-HD-017'},
+  {n:'Auriculares',p:85,e:'🎧',c:'Accesorios',s:12,sku:'AUR-018'},
+  {n:'Cargador USB',p:25,e:'🔌',c:'Electrónica',s:30,sku:'CRG-019'},
+  {n:'Agua 500ml',p:8,e:'💧',c:'Kiosco',s:200,sku:'AGU-020'},
+  {n:'Chocolatín',p:22,e:'🍫',c:'Kiosco',s:100,sku:'SNC-021'},
+];
+
+const PM=[
+  {id:'modo',l:'MODO QR',i:'🏦'},{id:'mp',l:'Mercado Pago',i:'🔵'},
+  {id:'gpay',l:'Google Pay',i:'📱'},{id:'card',l:'Tarjeta',i:'💳'},
+  {id:'t30',l:'Transfer. 3.0',i:'⚡'},{id:'cash',l:'Efectivo',i:'💵'},
+  {id:'uala',l:'Ualá',i:'💜'},{id:'naranja',l:'Naranja X',i:'🟠'},
+];
+const BANKS={
+  Galicia:[{n:3,free:true},{n:6,free:true},{n:12,free:true},{n:18,r:.06},{n:24,r:.08}],
+  Santander:[{n:3,free:true},{n:6,free:true},{n:12,r:.05},{n:18,r:.09}],
+  BBVA:[{n:3,free:true},{n:6,free:true},{n:12,free:true},{n:24,r:.07}],
+  'Naranja X':[{n:3,free:true},{n:6,free:true},{n:12,r:.05},{n:18,r:.08}],
+  HSBC:[{n:3,free:true},{n:6,r:.03},{n:12,r:.06}],
+};
+const CUSTS=[
+  {n:'Cliente por defecto',sub:'Sin cuenta registrada',s:'$0',r:0,v:0},
+  {n:'Maria García',sub:'DNI 28.451.320 · Gold',s:'$1,840',r:120,v:24},
+  {n:'James Wilson',sub:'DNI 35.120.890 · Silver',s:'$920',r:45,v:12},
+  {n:'Priya Patel',sub:'DNI 31.780.440 · Platinum',s:'$2,610',r:320,v:31},
+  {n:'Emma Brown',sub:'DNI 29.340.120 · Platinum',s:'$3,580',r:580,v:42},
+];
+const RECENT=[
+  {id:'#1048',cl:'Maria G.',prod:'Nike Air Max ×1',m:'MODO QR',tot:145.20,st:'Completado',dt:'14:32'},
+  {id:'#1047',cl:'James W.',prod:'Campera Denim ×2',m:'Google Pay',tot:229.90,st:'Completado',dt:'14:18'},
+  {id:'#1046',cl:'Priya P.',prod:'Kit Skincare ×1',m:'Mercado Pago',tot:54.45,st:'Completado',dt:'13:45'},
+  {id:'#1045',cl:'Anón.',prod:'Polo Shirt ×1',m:'Efectivo',tot:50.82,st:'Completado',dt:'13:20'},
+  {id:'#1044',cl:'Sara L.',prod:'Reloj Casio ×1',m:'Tarjeta',tot:96.80,st:'Completado',dt:'12:58'},
+  {id:'#1043',cl:'Carlos D.',prod:'Adidas Slides ×2',m:'Naranja X',tot:84.70,st:'Devuelto',dt:'12:30'},
+];
+const PROMOS=[
+  {nm:'2×1 en Skincare',dc:'Llevá 2 productos de Belleza y pagá 1.',bd:'50% en 2do item',vl:'hasta 30/04'},
+  {nm:'15% Calzado con Galicia',dc:'Descuento exclusivo con tarjeta Galicia en toda la línea de Calzado.',bd:'15% OFF',vl:'hasta 15/05'},
+  {nm:'Envío gratis +$500',dc:'Compras superiores a $500 con envío sin costo a CABA y GBA.',bd:'Envío gratis',vl:'hasta 01/05'},
+];
+const COUPONS=[
+  {code:'MAYO20',desc:'20% de descuento en toda la tienda',vl:'hasta 31/05',d:20},
+  {code:'BIENVENIDA',desc:'10% en primera compra',vl:'hasta 30/06',d:10},
+  {code:'MODO15',desc:'15% pagando con MODO QR',vl:'hasta 30/04',d:15},
+];
+const PICKUPS=[
+  {id:'PO-0091',cl:'Roberto M.',items:'Nike Air Max (T42) ×1, Cinturón ×1',amt:'$152.00',since:'ayer'},
+  {id:'PO-0088',cl:'Valentina R.',items:'Kit Skincare completo ×1',amt:'$54.45',since:'hace 2 días'},
+];
+const SHIPS=[
+  {nm:'Andreani Estándar',tm:'3-5 días hábiles',pr:850},
+  {nm:'Andreani Express',tm:'1-2 días hábiles',pr:1250},
+  {nm:'OCA a domicilio',tm:'4-6 días hábiles',pr:750},
+  {nm:'Retiro en sucursal',tm:'Inmediato',pr:0},
+];
+const EMPS=[
+  {nm:'Support ERPLY',role:'Gerente de tienda',av:'SE'},
+  {nm:'Ana Pérez',role:'Cajera Principal',av:'AP'},
+  {nm:'Luis García',role:'Cajero',av:'LG'},
+  {nm:'Marta López',role:'Depósito',av:'ML'},
+];
+const GC_DB={'GC2024A':{bal:500,exp:'30/06/2026'},'GCXMAS':{bal:200,exp:'31/12/2025'},'GIFT001':{bal:1000,exp:'01/01/2027'}};
+
+/* ─────── STATE ─────── */
+let cart={},discPct=0,taxExempt=false,selPM='modo',selBank='Galicia',selCuota=null;
+let cashDir='in',cashBal=2450,salesTot=0,custIdx=0,saleNote='',shipIdx=0,clockSt=Date.now();
+let pendingSales=[];
+
+/* ─────── UTILS ─────── */
+function toast(m){const e=document.getElementById('te');e.textContent=m;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2200)}
+function openM(id){document.getElementById(id).style.display='flex';}
+function closeM(id){document.getElementById(id).style.display='none';}
+function $(id){return document.getElementById(id);}
+function fmt(n){return n.toFixed(2);}
+
+/* ─────── CLOCK ─────── */
+function updateClock(){
+  const n=new Date();
+  $('tb-time').textContent=n.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  $('clock-t').textContent=n.toLocaleTimeString('es-AR');
+  $('clock-d').textContent=n.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+}
+setInterval(updateClock,1000);updateClock();
+setInterval(()=>{const d=Math.floor((Date.now()-clockSt)/1000);const h=Math.floor(d/3600),m=Math.floor((d%3600)/60);$('h-tod').textContent=h+':'+(m<10?'0':'')+m;},10000);
+
+/* ─────── CATEGORIES ─────── */
+const CATS=['Todos',...new Set(PR.map(p=>p.c))];
+function buildCatTabs(){
+  $('cat-tabs').innerHTML=CATS.map((c,i)=>`<div class="ctab${i===0?' on':''}" onclick="setCat('${c}',this)">${c}</div>`).join('');
+}
+function setCat(c,el){
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderGrid(c==='Todos'?PR:PR.filter(p=>p.c===c));
+}
+buildCatTabs();
+
+/* ─────── PRODUCT GRID ─────── */
+function renderGrid(prods){
+  ['pr1','pr2','pr3'].forEach((id,ri)=>{
+    const el=$(id),chunk=prods.slice(ri*7,(ri+1)*7);
+    let html=chunk.map(p=>`<button class="tile${p.s===0?' dim':''}" onclick="addP(${PR.indexOf(p)})"><div class="ti">${p.e}</div><div class="tl">${p.n}</div><div class="ts">$${p.p}${p.s>0&&p.s<=5?' ⚠'+p.s:''}</div></button>`).join('');
+    for(let i=chunk.length;i<7;i++) html+='<button class="tile dim"></button>';
+    el.innerHTML=html;
+  });
+}
+renderGrid(PR);
+function searchProd(q){renderGrid(q?PR.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())||p.sku.toLowerCase().includes(q.toLowerCase())):PR);}
+
+/* ─────── CART ─────── */
+function addP(idx){
+  const p=PR[idx];
+  if(p.s===0){toast('⚠ Sin stock: '+p.n);return;}
+  cart[p.n]=cart[p.n]?{...cart[p.n],q:cart[p.n].q+1}:{...p,q:1};
+  renderCart();toast(p.e+' '+p.n+' agregado');
+}
+function chQ(k,d){
+  if(!cart[k])return;
+  cart[k].q+=d;
+  if(cart[k].q<=0)delete cart[k];
+  renderCart();
+}
+function delItem(k){delete cart[k];renderCart();}
+function renderCart(){
+  const keys=Object.keys(cart);
+  if(!keys.length){
+    $('cart-list').innerHTML='<div class="cempty">Sin productos — tocá los tiles para agregar</div>';
+    $('ctot').style.display='none';
+    setPayTotal(0);
+    updateDisplay();return;
+  }
+  $('cart-list').innerHTML=keys.map(k=>{const i=cart[k];return `<div class="ci"><span class="cie">${i.e}</span><div style="flex:1;min-width:0"><div class="cin">${i.n}</div><div class="ciu">$${i.p} c/u</div></div><div class="ciq"><button class="ciqb" onclick="chQ('${k}',-1)">−</button><span class="ciqn">${i.q}</span><button class="ciqb" onclick="chQ('${k}',1)">+</button></div><span class="cip">$${fmt(i.p*i.q)}</span><span class="cix" onclick="delItem('${k}')">✕</span></div>`;}).join('');
+  const {sub,dA,tax,tot}=getAmts();
+  $('ct-sub').textContent='$'+fmt(sub);
+  $('ct-disc').textContent=discPct>0?`-$${fmt(dA)} (${discPct}%)`:'—';
+  $('ct-tax').textContent=taxExempt?'Exento':'$'+fmt(tax);
+  $('ct-tot').textContent='$'+fmt(tot);
+  $('ctot').style.display='block';
+  setPayTotal(tot);
+  $('lay-tot').textContent=fmt(tot);calcLay();
+  updateDisplay();
+}
+function getAmts(){
+  const keys=Object.keys(cart);
+  const sub=keys.reduce((s,k)=>s+cart[k].p*cart[k].q,0);
+  const dA=sub*(discPct/100);
+  const aD=sub-dA;
+  const tax=taxExempt?0:aD*0.21;
+  return{sub,dA,tax,tot:aD+tax};
+}
+function setPayTotal(t){
+  $('pay-tot').textContent=fmt(t);
+  $('m-pay-amt').textContent=fmt(t);
+  const k=Object.keys(cart).length;
+  $('pay-items-count').textContent=k?k+' producto'+(k>1?'s':''):'';
+}
+
+/* ─────── NEW SALE ─────── */
+function newSale(){cart={};discPct=0;taxExempt=false;saleNote='';selCuota=null;renderCart();$('disc-tile-lbl').textContent='Descuento';$('tax-tile').style.background='';toast('✚ Nueva venta iniciada');}
+function saveSale(){
+  if(!Object.keys(cart).length){toast('Sin productos en el carrito');return;}
+  const id='P-'+Math.floor(100+Math.random()*900);
+  pendingSales.push({id,items:Object.values(cart).map(i=>i.n+' ×'+i.q).join(', '),total:getAmts().tot,saved:'ahora mismo'});
+  $('pend-badge').textContent=pendingSales.length;
+  toast('💾 Guardada como '+id);newSale();
+}
+function saveAsOrder(){if(!Object.keys(cart).length){toast('Sin productos');return;}toast('📋 Guardada como orden ORD-'+Math.floor(1000+Math.random()*9000));}
+
+/* ─────── CUSTOMER ─────── */
+function cycleCust(){
+  custIdx=(custIdx+1)%CUSTS.length;
+  const c=CUSTS[custIdx];
+  $('cname').textContent=c.n;$('csub').textContent=c.sub;
+  $('cstore').textContent=c.s;$('creward').textContent=c.r;$('cvisit').textContent=c.v;
+  const av=$('cav');
+  if(!custIdx){av.classList.remove('has');av.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19" stroke="#7a8fa8" stroke-width="1.5"/><line x1="5" y1="12" x2="19" y2="12" stroke="#7a8fa8" stroke-width="1.5"/></svg>';}
+  else{av.classList.add('has');av.innerHTML='<span style="font-size:12px;font-weight:700;color:#fff">'+c.n.split(' ').map(w=>w[0]).join('')+'</span>';}
+  updateDisplay();
+}
+function searchCust(q){if(q.length>1)toast('Buscando cliente: '+q);}
+
+function openInvoice(){
+  $('inv-title').textContent='Factura — '+$('cname').textContent;
+  const c=CUSTS[custIdx];
+  $('inv-body').innerHTML=`<div style="background:var(--card);border-radius:6px;padding:10px;margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:7px">${c.n}</div><div style="font-size:9px;color:var(--muted);margin-bottom:3px">${c.sub}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px"><div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Crédito tienda</div><div style="font-size:17px;font-weight:800;color:var(--yellow)">${c.s}</div></div><div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Puntos reward</div><div style="font-size:17px;font-weight:800;color:var(--accent)">${c.r} pts</div></div></div></div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:7px">Últimas compras</div>${RECENT.slice(0,4).map(r=>`<div class="litem"><div class="li-id">${r.id}</div><div class="li-info"><div class="li-title">${r.prod}</div><div class="li-sub">${r.m} · ${r.dt}</div></div><div class="li-right"><div class="li-amt">$${fmt(r.tot)}</div><span class="bk ${r.st==='Completado'?'bkg':'bkr'}">${r.st}</span></div></div>`).join('')}`;
+  openM('m-invoice');
+}
+function openPurchases(){
+  $('inv-title').textContent='Historial compras — '+$('cname').textContent;
+  $('inv-body').innerHTML=RECENT.map(r=>`<div class="litem" onclick="closeM('m-invoice');toast('Venta ${r.id} cargada')"><div class="li-id">${r.id}</div><div class="li-info"><div class="li-title">${r.prod}</div><div class="li-sub">${r.m} · ${r.dt}</div></div><div class="li-right"><div class="li-amt">$${fmt(r.tot)}</div><span class="bk ${r.st==='Completado'?'bkg':r.st==='Devuelto'?'bkr':'bka'}">${r.st}</span></div></div>`).join('');
+  openM('m-invoice');
+}
+
+/* ─────── PAY ─────── */
+function openPay(){
+  if(!Object.keys(cart).length){toast('Agregá productos primero');return;}
+  $('pm-grid').innerHTML=PM.map(m=>`<div class="pmb${selPM===m.id?' sel':''}" onclick="pickPM('${m.id}',this)"><div class="pmi">${m.i}</div><div>${m.l}</div></div>`).join('');
+  renderCuotas();openM('m-pay');
+}
+function pickPM(id,el){selPM=id;selCuota=null;document.querySelectorAll('.pmb').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');$('cuotas-wrap').style.display=(id==='card'||id==='naranja')?'block':'none';if(id==='card'||id==='naranja')renderCuotas();}
+function renderCuotas(){
+  $('pay-bank-tabs').innerHTML=Object.keys(BANKS).map(b=>`<button class="btab2${b===selBank?' on':''}" onclick="pickBank('${b}',this)">${b}</button>`).join('');
+  renderCuotaOpts();
+}
+function pickBank(b,el){selBank=b;selCuota=null;document.querySelectorAll('.btab2').forEach(x=>x.classList.remove('on'));el.classList.add('on');renderCuotaOpts();}
+function renderCuotaOpts(){
+  const tot=getAmts().tot;
+  $('pay-cuota-opts').innerHTML=BANKS[selBank].map(pl=>{
+    const amt=pl.free?tot/pl.n:tot*(1+(pl.r||0)*pl.n)/pl.n;
+    return `<div class="co${selCuota===pl.n?' sel':''}" onclick="pickCuota(${pl.n})"><div class="con">${pl.n}x</div><div class="coa">$${Math.round(amt)}/mes</div><div class="coi">${pl.free?'Sin int.':'+'+(((pl.r||0)*100).toFixed(0))+'% TNA'}</div></div>`;
+  }).join('');
+}
+function pickCuota(n){selCuota=n;renderCuotaOpts();}
+
+function completeSale(){
+  closeM('m-pay');
+  const{sub,dA,tax,tot}=getAmts();
+  const m=PM.find(x=>x.id===selPM);
+  const keys=Object.keys(cart);
+  $('r-items').innerHTML=keys.map(k=>`<div class="ri"><span>${cart[k].e} ${cart[k].n} ×${cart[k].q}</span><span>$${fmt(cart[k].p*cart[k].q)}</span></div>`).join('');
+  $('r-sub').textContent='$'+fmt(sub);
+  if(discPct>0){$('r-disc-row').style.display='flex';$('r-disc').textContent='-$'+fmt(dA);}
+  $('r-tax-lbl').textContent=taxExempt?'IVA':'IVA 21%';
+  $('r-tax').textContent=taxExempt?'Exento':'$'+fmt(tax);
+  $('r-total').textContent='$'+fmt(tot);
+  $('r-meth').textContent='✓ Cobrado con '+m.l+(selCuota?` · ${selCuota}c ${BANKS[selBank].find(p=>p.n===selCuota)?.free?'sin int.':'c/int.'}·${selBank}`:'');
+  $('r-cuota-lbl').textContent=selCuota?`${selCuota} cuotas · ${selBank}`:'';
+  $('r-note-lbl').textContent=saleNote?'Nota: '+saleNote:'';
+  $('r-num').textContent=Math.floor(1000+Math.random()*9000);
+  $('r-date').textContent=new Date().toLocaleString('es-AR');
+  salesTot+=tot;$('s-tod').textContent=fmt(salesTot);
+  openM('m-receipt');
+  cart={};discPct=0;taxExempt=false;saleNote='';selCuota=null;$('disc-tile-lbl').textContent='Descuento';$('tax-tile').style.background='';
+  renderCart();
+}
+
+/* ─────── RETURN ─────── */
+function openReturn(){openM('m-return');}
+function processReturn(){const t=$('ret-ticket').value;if(!t){toast('Ingresá el número de ticket');return;}closeM('m-return');toast('↩ Devolución ticket #'+t+' procesada');}
+
+/* ─────── RECENT SALES ─────── */
+function openRecentSales(){
+  $('recent-body').innerHTML=RECENT.map(r=>`<div class="litem" onclick="closeM('m-recent');toast('Venta ${r.id} cargada')"><div class="li-id">${r.id}</div><div class="li-info"><div class="li-title">${r.cl} · ${r.prod}</div><div class="li-sub">${r.m} · ${r.dt}</div></div><div class="li-right"><div class="li-amt">$${fmt(r.tot)}</div><span class="bk ${r.st==='Completado'?'bkg':'bkr'}">${r.st}</span></div></div>`).join('');
+  openM('m-recent');
+}
+
+/* ─────── PENDING SALES ─────── */
+function openPendingSales(){
+  $('pend-title').textContent='Ventas pendientes guardadas';
+  $('pending-body').innerHTML=pendingSales.length?pendingSales.map((p,i)=>`<div class="pend-c" onclick="loadPending(${i})"><div class="pend-hd"><span class="pend-id">${p.id}</span><span class="pend-amt">$${fmt(p.total)}</span></div><div style="font-size:10px;margin-bottom:3px">${p.items}</div><div class="pend-dt">Guardado ${p.saved}</div></div>`).join(''):'<div style="text-align:center;color:var(--muted);padding:18px;font-size:11px">No hay ventas pendientes</div>';
+  openM('m-pending');
+}
+function loadPending(i){const p=pendingSales[i];toast('Venta '+p.id+' cargada al carrito');pendingSales.splice(i,1);$('pend-badge').textContent=pendingSales.length||'';closeM('m-pending');}
+
+/* ─────── PICKUP ─────── */
+function openPickup(){
+  $('pickup-body').innerHTML=PICKUPS.length?PICKUPS.map((p,i)=>`<div class="pickup-c"><div class="pickup-hd"><span style="font-size:10px;font-weight:700;color:var(--accent)">${p.id}</span><span style="font-size:11px;font-weight:800;color:var(--yellow)">${p.amt}</span></div><div style="font-size:11px;font-weight:700;margin-bottom:3px">${p.cl}</div><div style="font-size:9px;color:var(--muted);margin-bottom:6px">${p.items}</div><div style="font-size:8px;color:var(--muted);margin-bottom:6px">Pendiente desde ${p.since}</div><button style="padding:5px 10px;background:var(--pay);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer" onclick="markPickup(${i})">✓ Marcar como retirado</button></div>`).join(''):'<div style="text-align:center;color:var(--muted);padding:18px;font-size:11px">No hay pedidos de retiro</div>';
+  openM('m-pickup');
+}
+function markPickup(i){PICKUPS.splice(i,1);toast('Pedido marcado como retirado ✓');openPickup();}
+
+/* ─────── LAYAWAYS ─────── */
+function openLayaways(){$('pend-title').textContent='Apartados activos';$('pending-body').innerHTML='<div style="text-align:center;color:var(--muted);padding:18px;font-size:11px">No hay apartados activos</div>';openM('m-pending');}
+function openLayawayNew(){if(!Object.keys(cart).length){toast('Agregá productos primero');return;}const exp=new Date();exp.setDate(exp.getDate()+30);$('lay-exp').value=exp.toISOString().split('T')[0];renderCart();openM('m-layaway');}
+function calcLay(){const pct=parseFloat($('lay-pct').value)||30;const tot=getAmts().tot;$('lay-amt').value='$'+fmt(tot*pct/100);}
+function confirmLayaway(){closeM('m-layaway');toast('Apartado creado — seña registrada ✓');}
+
+/* ─────── DISCOUNT ─────── */
+function openDiscount(){
+  const presets=[5,10,15,20,25,30,50];
+  $('disc-grid').innerHTML=presets.map(v=>`<div class="dbt${discPct===v?' sel':''}" onclick="quickDisc(${v})">${v}%</div>`).join('');
+  $('disc-custom').value=discPct||'';previewDisc(discPct||0);
+  openM('m-discount');
+}
+function quickDisc(v){discPct=v;document.querySelectorAll('.dbt').forEach(b=>b.classList.toggle('sel',b.textContent===v+'%'));$('disc-custom').value=v;previewDisc(v);}
+function previewDisc(v){
+  const{sub}=getAmts();const d=sub*(parseFloat(v)||0)/100;
+  $('disc-preview').textContent='$'+fmt(d);
+  $('disc-after').textContent='$'+fmt(sub-d+(sub-d)*0.21);
+}
+function applyDiscount(){
+  const v=parseFloat($('disc-custom').value)||0;
+  if(v>20&&$('disc-pin').value!=='1234'){toast('PIN incorrecto para descuento >20%');return;}
+  discPct=v;renderCart();closeM('m-discount');
+  $('disc-tile-lbl').textContent=v>0?`Desc. ${v}%`:'Descuento';
+  toast(v>0?`Descuento del ${v}% aplicado`:'Descuento eliminado');
+}
+
+/* ─────── TAX EXEMPT ─────── */
+function toggleTaxExempt(){
+  taxExempt=!taxExempt;renderCart();
+  $('tax-tile').style.background=taxExempt?'var(--tgreen)':'';
+  toast(taxExempt?'Exención de IVA activada':'Exención de IVA desactivada');
+}
+
+/* ─────── NOTES ─────── */
+function openNotes(){if(saleNote)$('note-tick').value=saleNote;openM('m-notes');}
+function saveNote(){saleNote=$('note-tick').value;closeM('m-notes');toast('Notas guardadas en la venta');}
+
+/* ─────── CASH IN/OUT ─────── */
+function openCashInOut(){cashDir='in';$('c-in-tab').classList.add('on');$('c-out-tab').classList.remove('on');updateCashPreview();openM('m-cash');}
+function setCashDir(d){cashDir=d;$('c-in-tab').classList.toggle('on',d==='in');$('c-out-tab').classList.toggle('on',d==='out');updateCashPreview();}
+function updateCashPreview(){
+  const amt=parseFloat($('cash-amt').value)||0;
+  const after=cashBal+(cashDir==='in'?amt:-amt);
+  $('cash-cur').textContent='$'+fmt(cashBal);
+  $('cash-after').textContent='$'+fmt(after);
+  $('cash-after').style.color=after>=0?'#00b388':'#e74c3c';
+}
+function confirmCash(){
+  const amt=parseFloat($('cash-amt').value)||0;
+  if(amt<=0){toast('Ingresá un monto válido');return;}
+  cashBal+=(cashDir==='in'?amt:-amt);
+  closeM('m-cash');toast((cashDir==='in'?'↑ Ingreso':'↓ Egreso')+' de $'+fmt(amt)+' registrado');
+}
+
+/* ─────── STOCK ─────── */
+function openStockPrice(){renderStockList('');openM('m-stock');}
+function renderStockList(q){
+  const f=q?PR.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())||p.sku.toLowerCase().includes(q.toLowerCase())):PR;
+  $('stock-body').innerHTML=f.map(p=>{
+    const c=p.s===0?'#e74c3c':p.s<10?'#f39c12':'#00b388';
+    const l=p.s===0?'Sin stock':p.s<10?p.s+' (bajo)':p.s+' unid.';
+    return `<div class="sitem" onclick="addP(${PR.indexOf(p)});closeM('m-stock')"><div class="sie">${p.e}</div><div class="siinfo"><div class="sinm">${p.n}</div><div class="sisku">${p.sku}</div></div><div class="siprice">$${p.p}</div><div class="sist" style="background:${c}22;color:${c}">${l}</div></div>`;
+  }).join('');
+}
+
+/* ─────── CLOCK IN/OUT ─────── */
+function openClockInOut(){openM('m-clock');}
+function confirmClock(dir){
+  if(!$('clock-pin').value){toast('Ingresá tu PIN');return;}
+  const emp=$('clock-emp').value;
+  const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  closeM('m-clock');toast((dir==='in'?'🟢 Entrada: ':'🔴 Salida: ')+emp+' · '+now);
+}
+
+/* ─────── GIFT CARD ─────── */
+function openGiftCard(){$('gc-result').style.display='none';$('gc-inp').value='';openM('m-gc');}
+function lookupGC(v){
+  const gc=GC_DB[v.toUpperCase()];
+  if(gc&&v.length>=6){$('gc-code-show').textContent=v.toUpperCase();$('gc-bal-show').textContent='$'+fmt(gc.bal);$('gc-exp-show').textContent='Vence: '+gc.exp;$('gc-result').style.display='block';}
+  else $('gc-result').style.display='none';
+}
+function applyGC(){const code=$('gc-inp').value.toUpperCase();closeM('m-gc');discPct=Math.min(100,discPct+10);renderCart();toast('🎁 Gift Card '+code+' aplicada');}
+
+/* ─────── PROMOTIONS ─────── */
+function openPromotions(){
+  $('promos-body').innerHTML=PROMOS.map(p=>`<div class="promo-c"><div class="promo-nm">${p.nm}</div><div class="promo-dc">${p.dc}</div><div style="display:flex;justify-content:space-between;align-items:center"><span class="promo-bd">${p.bd}</span><span style="font-size:8px;color:var(--muted)">${p.vl}</span></div><button style="margin-top:7px;padding:5px 10px;background:var(--tilea);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer" onclick="toast('Promoción aplicada: ${p.nm}');closeM('m-promos')">Aplicar a esta venta</button></div>`).join('');
+  openM('m-promos');
+}
+
+/* ─────── COUPONS ─────── */
+function openCoupons(){
+  $('coupons-body').innerHTML=COUPONS.map(c=>`<div class="coup-c"><div><div class="coup-code">${c.code}</div></div><div class="coup-info"><div class="coup-desc">${c.desc}</div><div class="coup-valid">${c.vl}</div></div><button style="padding:4px 9px;background:var(--pay);color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer" onclick="useCoupon('${c.code}',${c.d})">Aplicar</button></div>`).join('');
+  openM('m-coupons');
+}
+function applyCouponCode(){const c=$('coup-inp').value.toUpperCase();const f=COUPONS.find(x=>x.code===c);if(f)useCoupon(c,f.d);else toast('Cupón no válido');}
+function useCoupon(code,d){discPct=d;renderCart();closeM('m-coupons');toast(`Cupón ${code} aplicado — ${d}% OFF`);}
+
+/* ─────── SHIPPING ─────── */
+function openShipping(){
+  $('ship-body').innerHTML=SHIPS.map((s,i)=>`<div class="ship-c${i===shipIdx?' sel':''}" onclick="pickShip(${i})"><div><div class="ship-nm">${s.nm}</div><div class="ship-tm">${s.tm}</div></div><div class="ship-pr">${s.pr===0?'Gratis':'$'+s.pr}</div></div>`).join('');
+  openM('m-shipping');
+}
+function pickShip(i){shipIdx=i;openShipping();}
+function confirmShip(){const s=SHIPS[shipIdx];closeM('m-shipping');toast('Envío agregado: '+s.nm+' ('+(s.pr?'$'+s.pr:'Gratis')+')');}
+
+/* ─────── X-REPORT ─────── */
+function openXReport(){
+  const t=salesTot||3842;
+  $('xr-body').innerHTML=`<div style="text-align:center;margin-bottom:10px;font-size:9px;color:var(--muted)">${new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+  <div class="xrw"><span class="xrl">Ventas totales</span><span class="xrv">$${fmt(t)}</span></div>
+  <div class="xrw"><span class="xrl">Transacciones</span><span class="xrv">127</span></div>
+  <div class="xrw"><span class="xrl">Ticket promedio</span><span class="xrv">$${fmt(t/127)}</span></div>
+  <div class="xrw"><span class="xrl">MODO QR</span><span class="xrv">$${fmt(t*.29)}</span></div>
+  <div class="xrw"><span class="xrl">Mercado Pago</span><span class="xrv">$${fmt(t*.20)}</span></div>
+  <div class="xrw"><span class="xrl">Google Pay</span><span class="xrv">$${fmt(t*.18)}</span></div>
+  <div class="xrw"><span class="xrl">Tarjeta</span><span class="xrv">$${fmt(t*.15)}</span></div>
+  <div class="xrw"><span class="xrl">Efectivo</span><span class="xrv">$${fmt(t*.10)}</span></div>
+  <div class="xrw"><span class="xrl">Devoluciones</span><span class="xrv" style="color:#e74c3c">-$${fmt(t*.042)}</span></div>
+  <div class="xrtot"><span>Neto del día</span><span>$${fmt(t*.958)}</span></div>
+  <button class="conf-btn conf-b" style="margin-top:8px" onclick="toast('🖨️ X-Report impreso');closeM('m-xreport')">🖨️ Imprimir X-Report</button>`;
+  openM('m-xreport');
+}
+
+/* ─────── CLOSE DAY ─────── */
+function openCloseDay(){
+  $('cd-body').innerHTML=[
+    {t:'Conteo de efectivo en caja',s:'Contá el efectivo físico y confirmá el total'},
+    {t:'Revisión de comprobantes de tarjeta',s:'Verificá los cupones de tarjeta del día'},
+    {t:'Cierre de terminales de pago',s:'Cerrá los lotes de Visa, Mastercard y QR'},
+    {t:'Z-Report de cierre',s:'Se genera automáticamente el reporte del día'},
+    {t:'Sincronización con la nube',s:'Los datos se envían al servidor central'},
+  ].map((s,i)=>`<div class="cd-step"><div class="cd-num">${i+1}</div><div><div class="cd-t">${s.t}</div><div class="cd-s">${s.s}</div></div></div>`).join('');
+  openM('m-closeday');
+}
+function confirmClose(){closeM('m-closeday');toast('✓ Día cerrado — Z-Report enviado por email');}
+
+/* ─────── EMPLOYEES ─────── */
+function openAddEmployee(){
+  $('emp-body').innerHTML=EMPS.map((e,i)=>`<div class="emp-sel" onclick="assignEmp(${i})"><div><div class="emp-sel-name">${e.nm}</div><div class="emp-sel-role">${e.role}</div></div><button style="padding:4px 9px;background:var(--tilea);color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer">Asignar</button></div>`).join('');
+}
+function assignEmp(i){
+  const e=EMPS[i];
+  $('emp-name').textContent=e.nm;$('emp-av').textContent=e.av;$('emp-short').textContent=e.nm;
+  closeM('m-emp');toast('Empleado asignado: '+e.nm);
+}
+
+/* ─────── PRINT / DRAWER ─────── */
+function printLastReceipt(){salesTot>0?toast('🖨️ Reimprimiendo último ticket...'):toast('No hay tickets recientes');}
+function printReceipt(){Object.keys(cart).length?toast('🖨️ Imprimiendo ticket actual...'):toast('Sin venta activa');}
+function openCashDrawer(){toast('🔓 Cajón de efectivo abierto');}
+
+/* ─────── LOCK / DISPLAY ─────── */
+function lockScreen(){const p=prompt('PIN para bloquear:');if(p)toast('🔒 Pantalla bloqueada');}
+function openCustomerDisplay(){
+  const{tot}=getAmts();
+  $('disp-cust').textContent='Cliente: '+$('cname').textContent;
+  $('disp-items').textContent=Object.keys(cart).length?Object.values(cart).map(i=>i.e+' '+i.n+' ×'+i.q).join(' · '):'Esperando productos...';
+  $('disp-total').textContent='$'+fmt(tot);
+  openM('m-display');
+}
+function updateDisplay(){if($('m-display').style.display==='flex')openCustomerDisplay();}
+
+/* ─────── KEYBOARD ─────── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='F2'){e.preventDefault();openPay();}
+  if(e.key==='F4'){e.preventDefault();newSale();}
+});
 </script>
 </body>
 </html>
